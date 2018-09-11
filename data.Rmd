@@ -1,0 +1,186 @@
+---
+title: "data"
+author: "KSA"
+date: "November 9, 2017"
+output: html_document
+---
+
+#packages
+```{r}
+library(ampvis2)
+library(tidyverse)
+library(magrittr)
+#library(phyloseq)
+#load("data/rasmus2017digesterpaper.RData")
+```
+
+#functions
+```{r}
+genusfunctions <- function(data, functions = c("FIL", "AOB", "NOB", "PAO", "GAO", "MET", "ACE", "FER", "DN", "Anammox")) {
+  data <- ampvis2:::amp_rename(data)
+  data$abund <- data$abund[,which(colSums(data$abund) != 0)] <- as.data.frame(apply(data$abund[,which(colSums(data$abund) != 0), drop = FALSE], 2, function(x) x/sum(x)*100))
+
+  MiDAS_functions <- list()
+  
+  for(i in 1:length(functions)) {
+    MiDAS_functions[[functions[i]]] <- data
+    MiDAS_functions[[functions[i]]]$tax$Genus[which(MiDAS_functions[[functions[i]]]$tax$Genus %in% as.character(ampvis2::MiF$Genus[which(ampvis2::MiF[,functions[i]] %in% c("POS", "VAR"))]))] <- functions[i]
+    if(any(MiDAS_functions[[functions[i]]]$tax$Genus %in% functions[i])) {
+      message(paste0("Calculating ", functions[i]))
+    MiDAS_functions[[functions[i]]] <- suppressMessages(ampvis2::amp_subset_taxa(MiDAS_functions[[functions[i]]], tax_vector = functions[i]))
+    MiDAS_functions[[functions[i]]][["result"]] <- t(ampvis2::amp_heatmap(MiDAS_functions[[functions[i]]], tax_aggregate = "Genus", tax_show = "all", normalise = FALSE, textmap = TRUE))
+    MiDAS_functions[[functions[i]]][["result"]] <- data.frame("SampleID" = as.character(rownames(MiDAS_functions[[functions[i]]][["result"]])), MiDAS_functions[[functions[i]]][["result"]])
+    data$metadata <- merge(data$metadata, MiDAS_functions[[functions[i]]][["result"]], by = 1)
+    }
+  }
+  metadata <- data$metadata
+  rownames(metadata) <- metadata[,1]
+  colnames(metadata)[which(colnames(metadata) %in% c("FIL"))] <- "Filamentous"
+  colnames(metadata)[which(colnames(metadata) %in% c("AOB"))] <- "Ammonia.Oxidizing.Bacteria"
+  colnames(metadata)[which(colnames(metadata) %in% c("NOB"))] <- "Nitrite.Oxidizing.Bacteria"
+  colnames(metadata)[which(colnames(metadata) %in% c("PAO"))] <- "Polyphosphate.Accumulating.Organisms"
+  colnames(metadata)[which(colnames(metadata) %in% c("GAO"))] <- "Glygogen.Accumulating.Organisms"
+  colnames(metadata)[which(colnames(metadata) %in% c("ACE"))] <- "Acetogens"
+  colnames(metadata)[which(colnames(metadata) %in% c("FER"))] <- "Fermenters"
+  colnames(metadata)[which(colnames(metadata) %in% c("DN"))] <- "Denitrifiers"
+  colnames(metadata)[which(colnames(metadata) %in% c("MET"))] <- "Methanogens"
+  colnames(metadata)[which(colnames(metadata) %in% c("Anammox"))] <- "Anammox"
+  return(metadata)
+}
+
+periodAvg <- function(metadata, datecol = "Date") {
+  metadata$Year <- lubridate::year(metadata$Date)
+  WS <- as.Date("2012-12-15", format = "%Y-%m-%d") # Winter Solstice
+  SE <- as.Date("2012-3-15",  format = "%Y-%m-%d") # Spring Equinox
+  SS <- as.Date("2012-6-15",  format = "%Y-%m-%d") # Summer Solstice
+  FE <- as.Date("2012-9-15",  format = "%Y-%m-%d") # Fall Equinox
+  
+  # Convert dates from any year to 2012 dates
+  d <- as.Date(strftime(metadata[,datecol], format="2012-%m-%d"))
+  
+  metadata$PeriodAvg <- ifelse (d >= WS | d < SE, "2000-12-15", #winter
+                                ifelse (d >= SE & d < SS, "2000-03-15", #spring
+                                        ifelse (d >= SS & d < FE, "2000-06-15", "2000-09-15"))) #summer, fall
+  metadata$PeriodAvg <- paste0(metadata$Year, "-", lubridate::month(metadata$PeriodAvg), "-", lubridate::day(metadata$PeriodAvg)) %>% lubridate::ymd()
+  metadata <- group_by(metadata, PeriodAvg)
+  metadata <- suppressWarnings(summarise_all(metadata, mean, na.rm = TRUE))
+  metadata <- metadata[,apply(metadata, 2, function(x) !all(is.na(x)))]
+  return(metadata)
+}
+```
+
+#MiDAS (old data, dont use)
+```{r}
+load("data/MiDAS.rda")
+#functions
+MiDAS$metadata <- genusfunctions(MiDAS)
+save(MiDAS, file = "data/MiDAS2.rda")
+
+#average functions
+MiDAS_PeriodAvg <- periodAvg(MiDAS$metadata)
+save(MiDAS_PeriodAvg, file = "data/MiDAS_PeriodAvg.rda")
+```
+
+#MiDASapr2018 (use this instead)
+```{r}
+metadata <- readxl::read_excel("data/MiDASapr2018/metadata.xlsx")
+otutable <- data.table::fread("data/MiDASapr2018/otutable.csv")
+metadata %<>% mutate_at("Date", lubridate::as_date)
+metadata %<>% mutate_at("Year", as.character)
+metadata$Plant[which(metadata$Plant %in% c("Aalborg E"))] <- "Aalborg East"
+metadata$Plant[which(metadata$Plant %in% c("Aalborg W"))] <- "Aalborg West"
+metadata$Plant[which(metadata$Plant %in% c("Esbjerg E"))] <- "Esbjerg East"
+metadata$Plant[which(metadata$Plant %in% c("Esbjerg W"))] <- "Esbjerg West"
+metadata$Plant[which(metadata$Plant %in% c("Damhusaaen"))] <- "Damhusåen"
+metadata$Plant[which(metadata$Plant %in% c("Odense NV"))] <- "Odense NW"
+colnames(metadata)[1] <- "SampleID"
+MiDASapr2018 <- amp_load(otutable, metadata)
+MiDASapr2018 <- amp_subset_samples(MiDASapr2018, normalise = TRUE)
+#MiDASapr2018$metadata %<>% left_join(MiDAS$metadata[,-c(2:9)], by = "SampleID")
+MiDASapr2018$metadata <- genusfunctions(MiDASapr2018)
+MiDAS <- MiDASapr2018
+save(MiDAS, file = "data/MiDAS2.rda")
+#openxlsx::write.xlsx(arrange(filter(test, Plant %in% c("Aalborg East", "Aalborg West")), Date), "test.xlsx")
+MiDAS_PeriodAvg <- periodAvg(MiDAS$metadata)
+save(MiDAS_PeriodAvg, file = "data/MiDAS_PeriodAvg.rda")
+```
+
+
+#digester archaea
+```{r}
+load("data/digester_archaea.rda")
+#functions
+digester_archaea$metadata <- digester_archaea$metadata[,c("SampleID", "Date", "Plant", "Temperature")]
+digester_archaea$metadata <- genusfunctions(digester_archaea)
+save(digester_archaea, file = "data/digester_archaea.rda")
+
+#average functions
+digester_archaea_PeriodAvg <- periodAvg(digester_archaea$metadata)
+save(digester_archaea_PeriodAvg, file = "data/digester_archaea_PeriodAvg.rda")
+```
+
+#digester bacteria
+```{r}
+#load("data/digester_bacteria_old.rda") #old
+load("data/MiDAD (rådnetanke) data/digester_new.rda") #new
+digester_bacteria <- amp_subset_samples(digester_new, normalise = TRUE)
+#functions
+digester_bacteria$metadata <- digester_bacteria$metadata[,1:7]
+digester_bacteria$metadata <- genusfunctions(digester_bacteria)
+
+#fix Plant names
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("aaby"))] <- "Åby"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Aalborg oest"))] <- "Aalborg East"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Aalborg Vest"))] <- "Aalborg West"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Avedoere"))] <- "Avedøre"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Damhusaaen"))] <- "Damhusåen"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Egaa"))] <- "Egå"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Ejby Moelle"))] <- "Ejby Mølle"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Esbjerg Vest"))] <- "Esbjerg West"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Fornaes"))] <- "Fornæs"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Hjoerring"))] <- "Hjørring"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Naestved"))] <- "Næstved"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Ringkoebing"))] <- "Ringkøbing"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Soeholt"))] <- "Søholt"
+digester_bacteria$metadata$Plant[which(digester_bacteria$metadata$Plant %in% c("Sohoelt"))] <- "Søholt"
+
+#save
+save(digester_bacteria, file = "data/digester_bacteria.rda")
+
+#average functions
+digester_bacteria_PeriodAvg <- periodAvg(digester_bacteria$metadata)
+save(digester_bacteria_PeriodAvg, file = "data/digester_bacteria_PeriodAvg.rda")
+```
+
+
+#AalborgEW timeseries
+```{r}
+otutable <- read.csv("data/fggyt/otutable.txt", check.names = FALSE, sep = "\t")
+metadata <- read.csv("data/fggyt/metadata.txt", check.names = FALSE, sep = "\t", colClasses = c("character"))[,c(1,2,4,5,7,8,9)] %>% 
+  filter(Year %in% c("2012", "2013", "2014", "2015"))
+metadata$Date <- ymd(metadata$Date)
+metadata$DSVI <- as.numeric(metadata$DSVI)
+metadata$Plant[which(metadata$Plant %in% c("Aalborg E"))] <- "Aalborg East"
+metadata$Plant[which(metadata$Plant %in% c("Aalborg W"))] <- "Aalborg West"
+AalborgEW <- amp_load(otutable,metadata)
+AalborgEW$abund <- as.data.frame(apply(AalborgEW$abund, 2, function(x) x/sum(x)*100))
+
+#functions
+AalborgEW$metadata <- genusfunctions(AalborgEW)
+save(AalborgEW, file = "data/AalborgEW.rda")
+
+#average functions
+AalborgEW_PeriodAvg <- periodAvg(AalborgEW$metadata)
+save(AalborgEW_PeriodAvg, file = "data/AalborgEW_PeriodAvg.rda")
+```
+
+#egaamarselisborg CP332 hasteprøver
+```{r}
+#data copied from CP-Ongoing 18 may 2018
+egaamarselisborg <- amp_subset_samples(amp_load(otutable = read.delim("data/aarhusvand CP332/otutable.txt", check.names = FALSE), metadata = openxlsx::read.xlsx("data/aarhusvand CP332/CP332_metadata.xlsx", rows = 1:21, cols = c(1,9,11))), normalise = TRUE)
+colnames(egaamarselisborg$metadata) <- c("SampleID", "Plant", "Date")
+egaamarselisborg$metadata$Date <- as.Date(egaamarselisborg$metadata$Date, origin = "1899-12-30", format = "%Y-%m-%d")
+egaamarselisborg$metadata <- genusfunctions(egaamarselisborg)
+save(egaamarselisborg, file = "data/egaamarselisborg(CP332).rda")
+```
+
