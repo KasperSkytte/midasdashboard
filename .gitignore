@@ -38,3 +38,4 @@ rsconnect/
 .Rhistory
 temp*
 data/
+.dropbox
