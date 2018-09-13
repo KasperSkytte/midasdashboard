@@ -33,7 +33,7 @@ ksa_drop_download <- function(path,
 }
 
 #get plant info
-path <- drop_search("plantinfo.xls", path = "/MiDAS\ app")[["matches"]][[1]][["metadata"]][["path_lower"]]
+path <- drop_search("plantinfo.xls", path = "/MiDAS-app")[["matches"]][[1]][["metadata"]][["path_lower"]]
 DLstatus <- ksa_drop_download(path, local_path = paste("tempfile", tools::file_ext(path), sep = "."), overwrite = TRUE, verbose = TRUE, progress = FALSE)
 plantinfo <- readxl::read_excel(DLstatus) %>% arrange(Anlæg)
 
