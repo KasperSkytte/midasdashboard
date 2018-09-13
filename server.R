@@ -479,7 +479,7 @@ shinyServer(function(input, output, session) {
       if(input$timeseries_function_avg) {
         plot <- plot + 
           geom_line(data = MiDAS_PeriodAvg, aes(x=PeriodAvg, y=DSVI), color = "black", linetype = "dotted") +
-          geom_point(data = MiDAS_PeriodAvg, aes(x=PeriodAvg, y=DSVI), color = "black")
+          geom_point(data = MiDAS_PeriodAvg, aes(x=PeriodAvg, y=DSVI), color = "black") 
       }
       
       plotlyplot <- ggplotly(plot) %>% 
