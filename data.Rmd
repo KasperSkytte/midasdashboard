@@ -102,6 +102,7 @@ MiDAS <- MiDASapr2018
 save(MiDAS, file = "data/MiDAS2.rda")
 #openxlsx::write.xlsx(arrange(filter(test, Plant %in% c("Aalborg East", "Aalborg West")), Date), "test.xlsx")
 MiDAS_PeriodAvg <- periodAvg(MiDAS$metadata)
+MiDAS_PeriodAvg$Date <- as.character(as.Date(MiDAS_PeriodAvg$Date))
 save(MiDAS_PeriodAvg, file = "data/MiDAS_PeriodAvg.rda")
 ```
 
