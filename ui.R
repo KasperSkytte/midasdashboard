@@ -29,7 +29,7 @@ devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.
 devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.2.8/R/amp_subset_taxa.R")
 devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.2.8/R/amp_rename.R")
 #devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/master/R/amp_heatmap.R")
-devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/master/R/amp_ordinate.R")
+devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/7b4842e301289a927b3ce19d399ba6e61ca5af0b/R/amp_ordinate.R")
 #devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/master/R/amp_boxplot.R")
 #devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/master/R/amp_function.R")
 #devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/master/R/amp_timeseries.R")
