@@ -58,7 +58,7 @@ body <- dashboardBody(
                   selectizeInput(
                     inputId = "heatmap_group_by",
                     label = "Gruppér",
-                    choices = c("Anlæg" = "Plant", "År" = "Year", "Årstid" = "Period", "Dato" = "Date"), #"Dato" = "ShortDate"
+                    choices = c("Anlæg" = "Plant", "År" = "Year", "Årstid" = "Period", "Dato" = "Date"),
                     selected = "Anlæg",
                     multiple = FALSE,
                     width = "200px"
@@ -66,31 +66,12 @@ body <- dashboardBody(
                   selectizeInput(
                     inputId = "heatmap_facet_by",
                     label = "Inddel",
-                    choices = c("ingen" = "none", c("Anlæg" = "Plant", "År" = "Year", "Årstid" = "Period", "Dato" = "Date")), #"Dato" = "ShortDate"
+                    choices = c("ingen" = "none", c("Anlæg" = "Plant", "År" = "Year", "Årstid" = "Period")),
                     selected = "Årstid",
                     multiple = FALSE,
                     width = "200px"
                   ),
                   uiOutput("heatmap_sort"),
-                  selectInput(inputId = "genusfunction",
-                              label = "Vis kun bakterier med en kendt funktion",
-                              choices = c("Alle bakterier" = "all",
-                                          "Trådformende" = "FIL",
-                                          "Ammonium oxiderende bakterier (AOB)" = "AOB",
-                                          "Nitrit oxiderende bakterier (NOB)" = "NOB",
-                                          "Polyfosfat akkumulerende bakterier (PAO)" = "PAO",
-                                          "Glykogen akkumulerende bakterier (GAO)" = "GAO",
-                                          "Acetat producerende bakterier" = "ACE",
-                                          "Fermenterende bakterier" = "FER",
-                                          "Denitrificerende bakterier" = "DN",
-                                          "Metan producerende (archaea)" = "MET"
-                              ),
-                              selected = "all",
-                              multiple = FALSE
-                  ),
-                  #limit the height of the heatmap_filtergenera selectinput below:
-                  tags$style("#heatmap_filtergenera ~ .selectize-control .selectize-input {max-height: 100px;overflow-y: auto;}"),
-                  uiOutput("heatmap_filtergenera"),
                   sliderInput(inputId = "heatmap_tax_show",
                               label = "Antal af de mest hyppige bakterier (Genus niveau)",
                               min = 1,
