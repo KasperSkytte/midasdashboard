@@ -11,12 +11,12 @@ body <- dashboardBody(
             tags$hr(),
             textInput("user_name",
                       "Bruger:",
-                      value = if(exists("testmode")) "MiDAS2017" else ""
-            ),
+                      value = if(isTRUE(getOption("testmode"))) "MiDAS2017" else ""
+                      ),
             passwordInput("password",
                           "Password:",
-                          value = if(exists("testmode")) "spildevand" else ""
-            ),
+                          value = if(isTRUE(getOption("testmode"))) "spildevand" else ""
+                          ),
             actionButton("login_button",
                          "Log ind",
                          icon("sign-in")
@@ -83,7 +83,7 @@ body <- dashboardBody(
                   textInput(inputId = "heatmap_colorvector",
                             label = "Farvegradient (log10)",
                             value = "skyblue3, whitesmoke, salmon2"),
-                  tags$a(href = "http://www.bxhorn.com/Downloads/RColors1_bxhorn.pdf", target = "_blank", "Se mulige farver"),
+                  downloadLink("RColorSheet", "Se mulige farver"),
                   tags$hr(),
                   checkboxInput(inputId = "heatmap_plot_values",
                                 label = "Vis procenttal", 
@@ -141,81 +141,22 @@ body <- dashboardBody(
               )
     ),
     tabItem(
-      tabName = "timeseries_genus",
+      tabName = "timeseries",
       fluidRow(
         width = 12,
         column(
           width = 9,
           box(
-            title = tagList(shiny::icon("line-chart"), "Mest hyppige bakterier (Genus)"),
+            title = tagList(shiny::icon("line-chart"), "Tidsserier"),
             width = 12,
             status = "primary",
             solidHeader = TRUE,
             collapsible = TRUE,
             plotlyOutput("timeseries",
                          height = "700px")
-          )
-        ),
-        column(
-          width = 3,
-          box(
-            title = tagList(shiny::icon("cog"), "Indstillinger"),
-            width = 12,
-            status = "info",
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            radioButtons(inputId = "timeseries_group",
-                               label = "Vis som",
-                               choices = c("Gennemsnit af valgte anlæg (per dato)" = "avg", "Farvet efter individuelle anlæg" = "grouped"),
-                               selected = "grouped"
-                               ),
-            sliderInput(inputId = "timeseries_tax_show",
-                        label = "Antal af de mest hyppige bakterier (Genus niveau)",
-                        min = 1,
-                        max = 16,
-                        value = 4,
-                        step = 1,
-                        width = "300px"
-                        ),
-            checkboxInput(inputId = "timeseries_split",
-                          label = "Individuelle plots",
-                          value = TRUE
-                          ),
-            tags$hr(),
-            conditionalPanel(
-              condition="$('html').hasClass('shiny-busy')", 
-              actionButton(inputId = "alejkbrnrtcfhge",
-                           label = "Opdater plot",
-                           icon = icon("refresh")
-              )
-            ),
-            conditionalPanel(
-              condition="!$('html').hasClass('shiny-busy')", 
-              actionButton(inputId = "render_timeseries",
-                           label = "Opdater plot"
-              )
-            )
-          )
-        )
-      )
-    ),
-    tabItem(
-      tabName = "timeseries_function",
-      fluidRow(
-        width = 12,
-        column(
-          width = 9,
-          box(
-            title = tagList(shiny::icon("line-chart"), "Genus funktion"),
-            width = 12,
-            status = "primary",
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            plotlyOutput("timeseries_function",
-                         height = "500px")
           ),
           conditionalPanel(
-            condition = "(input.dataset == 'Aktivt slam' || input.dataset == 'Aalborg BioBANK (2012-2015)') && input.timeseries_function == 'FIL'",
+            condition = "(input.dataset == 'Aktivt slam' || input.dataset == 'BioBANK (2015-2018)') && input.genusfunction == 'FIL'",
             tabBox(
               title = tagList(shiny::icon("line-chart"), "Slam Volumen Index"),
               width = 12,
@@ -241,44 +182,29 @@ body <- dashboardBody(
             status = "info",
             solidHeader = TRUE,
             collapsible = TRUE,
-            selectInput(inputId = "timeseries_function",
-                        label = "Genus funktion",
-                        choices = c("Trådformende" = "FIL",
-                                    "Ammonium oxiderende bakterier (AOB)" = "AOB",
-                                    "Nitrit oxiderende bakterier (NOB)" = "NOB",
-                                    "Polyfosfat akkumulerende bakterier (PAO)" = "PAO",
-                                    "Glykogen akkumulerende bakterier (GAO)" = "GAO",
-                                    "Acetat producerende bakterier" = "ACE",
-                                    "Fermenterende bakterier" = "FER",
-                                    "Denitrificerende bakterier" = "DN",
-                                    "Metan producerende (archaea)" = "MET"
-                        ),
-                        selected = "Filamentous",
-                        multiple = FALSE
-            ),
-            radioButtons(inputId = "timeseries_function_group",
-                         label = "Vis som",
-                         choices = c("Gennemsnit af valgte anlæg (per dato)" = "avg", "Farvet efter individuelle anlæg" = "grouped"),
-                         selected = "avg"
-            ),
-            sliderInput(inputId = "timeseries_function_tax_show",
+            sliderInput(inputId = "timeseries_tax_show",
                         label = "Antal af de mest hyppige bakterier (Genus niveau)",
                         min = 1,
                         max = 16,
-                        value = 6,
+                        value = 9,
                         step = 1,
                         width = "300px"
-            ),
-            checkboxInput(inputId = "timeseries_function_split",
-                          label = "Individuelle plots",
-                          value = FALSE
+                        ),
+            checkboxInput(inputId = "timeseries_freey",
+                          label = "Frie y-akser",
+                          value = FALSE),
+            tags$hr(),
+            conditionalPanel(
+              condition="$('html').hasClass('shiny-busy')", 
+              actionButton(inputId = "alejkbrnrtcfhge",
+                           label = "Opdater plot",
+                           icon = icon("refresh")
+              )
             ),
             conditionalPanel(
-              condition = "input.timeseries_function == 'FIL'",
-              checkboxInput(
-                input = "timeseries_function_avg",
-                label = "Vis årstidsgennemsnit af alle anlæg (sort)",
-                value = TRUE
+              condition="!$('html').hasClass('shiny-busy')", 
+              actionButton(inputId = "render_timeseries",
+                           label = "Opdater plot"
               )
             )
           )
@@ -315,6 +241,20 @@ body <- dashboardBody(
               inputId = "ord_trajectory",
               label = "Indtegn bane mellem punkterne efter dato",
               value = TRUE
+            ),
+            tags$hr(),
+            conditionalPanel(
+              condition="$('html').hasClass('shiny-busy')", 
+              actionButton(inputId = "alejkbrnrtcfhge",
+                           label = "Opdater plot",
+                           icon = icon("refresh")
+              )
+            ),
+            conditionalPanel(
+              condition="!$('html').hasClass('shiny-busy')", 
+              actionButton(inputId = "render_ordination",
+                           label = "Opdater plot"
+              )
             )
             )
         )
