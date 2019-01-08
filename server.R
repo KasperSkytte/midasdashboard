@@ -42,13 +42,14 @@ shinyServer(function(input, output, session) {
   load("data/egaamarselisborg(CP332).rda")
   load("data/MiF.rda")
   load("data/MiDAS2.rda")
-  load("data/MiDAS_PeriodAvg.rda")
   load("data/digester_bacteria.rda")
   load("data/digester_bacteria_PeriodAvg.rda")
   load("data/digester_archaea.rda")
   load("data/digester_archaea_PeriodAvg.rda")
-  load("data/AalborgEW.rda")
-  load("data/AalborgEW_PeriodAvg.rda")
+  load("data/biobank2015_2018.rda")
+  load("data/biobank2015_2018_PeriodAvg.rda")
+  load("data/AalborgW.rda")
+  load("data/AalborgW_PeriodAvg.rda")
   
   data <- reactive({
     if(input$dataset == "Aktivt slam") {
@@ -72,13 +73,16 @@ shinyServer(function(input, output, session) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% da_plants))
       } else
         ds <- d
-    } else if(input$dataset == "Aalborg BioBANK (2012-2015)") {
-      aaew_plants <<- input$wwtp_aalborgew
-      d <- AalborgEW
-      if(!is.null(input$wwtp_aalborgew)) {
-        ds <- suppressMessages(amp_subset_samples(d, Plant %in% aaew_plants))
+    } else if(input$dataset == "BioBANK (2015-2018)") {
+      biobank_plants <<- input$wwtp_biobank_all
+      d <- biobank2015_2018
+      if(!is.null(input$wwtp_biobank_all)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_plants))
       } else
         ds <- d
+    } else if(input$dataset == "Aalborg West (2015-2018)") {
+      d <- AalborgW
+      ds <- AalborgW
     } else if(input$dataset == "CP332 (Egå+Marselisborg)") {
       CP332 <<- input$wwtp_CP332
       d <- egaamarselisborg
@@ -87,9 +91,40 @@ shinyServer(function(input, output, session) {
       } else
         ds <- d
     }
+    
     d$metadata <- d$metadata %>% 
-      mutate("Alle_anlæg" = "Alle i MiDAS")
-    return(list("complete" = amp_rename(d), "subset" = ds))
+      mutate("Alle_anlæg" = "Alle i datasæt")
+    
+    if(input$genusfunction != "all") {
+      ds$tax <- filter(ds$tax, grepl(paste0(as.character(MiF$Genus[which(MiF[,input$genusfunction] %in% c("POS"))]), "$", collapse = "|"), Genus))
+      rownames(ds$tax) <- ds$tax$OTU
+      ds$abund <- ds$abund[rownames(ds$tax),]
+    }
+    
+    out <- list("complete" = amp_rename(d),
+                "subset" = ds)
+    
+    return(out)
+  })
+  
+  data_subset <- reactive({
+    d <- data()[["subset"]]
+    if(!is.null(input$filtergenera)) {
+      d$tax <- filter(d$tax, grepl(paste0(as.character(input$filtergenera), "$", collapse = "|"), Genus))
+      rownames(d$tax) <- d$tax$OTU
+      d$abund <- d$abund[rownames(d$tax),]
+    }
+    return(d)
+  })
+  
+  output$filtergenera <- renderUI({
+    selectizeInput(
+      inputId = "filtergenera",
+      label = "Filtrér til specifikke bakterier",
+      choices = str_remove_all(unique(as.character(data()[["subset"]][["tax"]][["Genus"]])), "^[k|p|c|o|f|g|s]_*"),
+      multiple = TRUE,
+      options = list(placeholder = "Alle")
+    )
   })
   
   ######################### LOGIN #########################
@@ -142,16 +177,7 @@ shinyServer(function(input, output, session) {
           menuItem(
             text = "Tidsserier",
             tabName = "timeseries",
-            icon = icon("line-chart"),
-            startExpanded = FALSE,
-            menuSubItem(
-              text = "Mest hyppige bakterier (Genus)",
-              tabName = "timeseries_genus"
-            ),
-            menuSubItem(
-              text = "Genus funktion",
-              tabName = "timeseries_function"
-            )
+            icon = icon("line-chart")
           ),
           menuItem(
             text = "Ordinering",
@@ -162,7 +188,20 @@ shinyServer(function(input, output, session) {
           selectInput(
             inputId = "dataset",
             label = "Datasæt",
-            choices = if(input$user_name == "aarhusvand") c("Aktivt slam", "Rådnetank (bakterier)", "Rådnetank (archaea)", "Aalborg BioBANK (2012-2015)", "CP332 (Egå+Marselisborg)") else c("Aktivt slam", "Rådnetank (bakterier)", "Rådnetank (archaea)", "Aalborg BioBANK (2012-2015)"),
+            choices = if(input$user_name == "aarhusvand") {
+              c("Aktivt slam",
+                "Rådnetank (bakterier)",
+                "Rådnetank (archaea)", 
+                "BioBANK (2015-2018)", 
+                "Aalborg West (2015-2018)",
+                "CP332 (Egå+Marselisborg)") 
+            } else {
+              c("Aktivt slam", 
+                "Rådnetank (bakterier)", 
+                "Rådnetank (archaea)", 
+                "BioBANK (2015-2018)",
+                "Aalborg West (2015-2018)")
+            },
             selected = "Aktivt slam",
             multiple = FALSE
           ),
@@ -200,12 +239,12 @@ shinyServer(function(input, output, session) {
             )
           ),
           conditionalPanel(
-            condition = "input.dataset == 'Aalborg BioBANK (2012-2015)'",
+            condition = "input.dataset == 'BioBANK (2015-2018)'",
             selectizeInput(
-              inputId = "wwtp_aalborgew",
+              inputId = "wwtp_biobank_all",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(AalborgEW$metadata$Plant))),
-              selected = c("Aalborg West", "Aalborg East"),
+              choices = sort(as.character(unique(biobank2015_2018$metadata$Plant))),
+              selected = c("Esbjerg West", "Esbjerg East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
             )
@@ -221,6 +260,25 @@ shinyServer(function(input, output, session) {
               options = list(placeholder = "Alle")
             )
           ),
+          selectInput(inputId = "genusfunction",
+                      label = "Filtrér til kendt Genus funktion",
+                      choices = c("Alle bakterier" = "all",
+                                  "Trådformende" = "FIL",
+                                  "Ammonium oxiderende bakterier (AOB)" = "AOB",
+                                  "Nitrit oxiderende bakterier (NOB)" = "NOB",
+                                  "Polyfosfat akkumulerende bakterier (PAO)" = "PAO",
+                                  "Glykogen akkumulerende bakterier (GAO)" = "GAO",
+                                  "Acetat producerende bakterier" = "ACE",
+                                  "Fermenterende bakterier" = "FER",
+                                  "Denitrificerende bakterier" = "DN",
+                                  "Metan producerende (archaea)" = "MET"
+                      ),
+                      selected = "all",
+                      multiple = FALSE
+          ),
+          #limit the height of the heatmap_filtergenera selectinput below:
+          tags$style("#filtergenera ~ .selectize-control .selectize-input {max-height: 100px;overflow-y: auto;}"),
+          uiOutput("filtergenera"),
           tags$hr(),
           conditionalPanel(
             condition="$('html').hasClass('shiny-busy')", 
@@ -246,33 +304,11 @@ shinyServer(function(input, output, session) {
     selectizeInput(
       inputId = "heatmap_sort",
       label = "Sortér",
-      choices = c("Gennemsnit af valgte", unique(data()[["subset"]]$metadata[,input$heatmap_group_by])),
+      choices = c("Gennemsnit af valgte", unique(data_subset()$metadata[,input$heatmap_group_by])),
       multiple = FALSE,
       width = "200px"
     )
   )
-  
-  output$heatmap_filtergenera <- renderUI({
-    selectizeInput(
-      inputId = "heatmap_filtergenera",
-      label = "Vis kun specifikke bakterier (ud af valgte funktion ovenfor)",
-      choices = str_remove_all(unique(as.character(heatmap_data()[["tax"]][["Genus"]])), "^[k|p|c|o|f|g|s]_*"),
-      selected = "",
-      multiple = TRUE,
-      width = "200px",
-      options = list(placeholder = "Alle")
-    )
-  })
-  
-  heatmap_data <- reactive({
-    ds <- data()[["subset"]]
-    if(input$genusfunction != "all") {
-      ds$tax <- filter(ds$tax, grepl(paste0(as.character(MiF$Genus[which(MiF[,input$genusfunction] %in% c("POS", "VAR"))]), "$", collapse = "|"), Genus))
-      rownames(ds$tax) <- ds$tax$OTU
-      ds$abund <- ds$abund[rownames(ds$tax),]
-    }
-    return(ds)
-  })
   
   heatmap <- eventReactive(input$render_heatmap, {
     #heatmap
@@ -282,14 +318,8 @@ shinyServer(function(input, output, session) {
     } else {
       order_by <- input$heatmap_sort
     }
-    ds <- heatmap_data()
-    if(!is.null(input$heatmap_filtergenera)) {
-      ds$tax <- filter(ds$tax, grepl(paste0(as.character(input$heatmap_filtergenera), "$", collapse = "|"), Genus))
-      rownames(ds$tax) <- ds$tax$OTU
-      ds$abund <- ds$abund[rownames(ds$tax),]
-    }
     
-    heatmap <- amp_heatmap(data = ds,
+    heatmap <- amp_heatmap(data = data_subset(),
                 group_by = input$heatmap_group_by, 
                 facet_by = facet_by,
                 tax_aggregate = "Genus",
@@ -346,7 +376,6 @@ shinyServer(function(input, output, session) {
                             "FER",
                             "ACE",
                             "MET")
-      
       # Retrieve the genus names from the plot
       names <- data.frame(do.call('rbind', strsplit(levels(droplevels(heatmap$data$Display)),'; ',fixed=TRUE)))
       names <- data.frame(Genus = names[,1])
@@ -370,7 +399,7 @@ shinyServer(function(input, output, session) {
       
       # Generate the plot
       functions <- ggplot(nameFuncM, aes(x = Function, y = Genus, color = Value)) +
-        geom_point(size = 5) +
+        geom_point(size = 4) +
         scale_color_manual(values = c(POS, VAR, NEG, NT), labels = c("Positiv", "Variabel", "Negativ", "Ikke testet"), drop = FALSE) +
         theme(axis.text.x = element_text(size = 12, color = "black", angle = 90, hjust = 1, vjust = 0.4),
               axis.text.y = element_blank(),
@@ -384,37 +413,39 @@ shinyServer(function(input, output, session) {
               axis.line = element_blank()
         )
     }
+    
     if(!isTRUE(input$heatmap_showmean) & !isTRUE(input$heatmap_function)) {
-      return(heatmap)
+      heatmap <- heatmap
     } else if(isTRUE(input$heatmap_showmean) & !isTRUE(input$heatmap_function)) {
-      return(cowplot::plot_grid(heatmap, allheatmap, ncol = 2, rel_widths = c(0.90, 0.10), align = "h", axis = "tb"))
+      heatmap <- cowplot::plot_grid(heatmap, allheatmap, ncol = 2, rel_widths = c(0.90, 0.10), align = "h", axis = "tb")
     } else if(isTRUE(!input$heatmap_showmean) & isTRUE(input$heatmap_function)) {
-      return(cowplot::plot_grid(heatmap, functions, ncol = 2, rel_widths = c(0.70, 0.30), align = "h", axis = "tb"))
+      heatmap <- cowplot::plot_grid(heatmap, functions, ncol = 2, rel_widths = c(0.70, 0.30), align = "h", axis = "tb")
     } else if(isTRUE(input$heatmap_showmean) & isTRUE(input$heatmap_function)) {
-      return(cowplot::plot_grid(heatmap, allheatmap, functions, ncol = 3, rel_widths = c(0.65, 0.10, 0.25), align = "h", axis = "tb"))
+      heatmap <- cowplot::plot_grid(heatmap, allheatmap, functions, ncol = 3, rel_widths = c(0.65, 0.10, 0.25), align = "h", axis = "tb")
     }
+    
+    textmap <- NULL#heatmap$data[,c("Display", "Abundance", "Group")]
+    return(list(heatmap = heatmap,
+                textmap = textmap))
   })
   
   output$heatmap <- renderPlot({
-    heatmap()
+    heatmap()[["heatmap"]]
   })
   
   ######################### TIMESERIES #########################
   timeseries <- eventReactive(input$render_timeseries, {
-    if(input$timeseries_group == "avg") {
-      group_by <- NULL
-    } else if(!input$timeseries_group == "avg") {
-      group_by <- "Plant"
-    }
-    plot <- suppressWarnings(amp_timeseries(data = data()[["subset"]],
+    plot <- suppressWarnings(amp_timeseries(data = data_subset(),
                                             time_variable = "Date",
                                             tax_aggregate = "Genus",
-                                            group_by = group_by,
+                                            group_by = "Plant",
                                             raw = TRUE,
                                             tax_show = input$timeseries_tax_show,
-                                            split = input$timeseries_split
-    ))
-    plot <- plot + scale_x_date(date_labels = "%Y-%b-%d")
+                                            split = TRUE,
+                                            scales = if(isTRUE(input$timeseries_freey)) "free_y" else "fixed"))
+    plot <- plot + 
+      scale_x_date(date_labels = "%Y", 
+                   date_break = "1 year")
     plotlyplot <- ggplotly(plot) %>% 
       layout(margin = list(l = 100,
                            r = 50,
@@ -433,9 +464,11 @@ shinyServer(function(input, output, session) {
   
   output$timeseries_svi <- renderPlotly({
     if(input$dataset == "Aktivt slam") {
-      plot <- ggplot(data()[["subset"]]$metadata, aes(x=Date, y=SVI)) +
+      plot <- ggplot(data_subset()$metadata, aes(x=Date, y=SVI)) +
         geom_line(aes(group = Plant, color = Plant)) +
         geom_point(aes(group = Plant, color = Plant)) +
+        scale_x_date(date_labels = "%Y", 
+                     date_break = "1 year") +
         xlab("") +
         ylab("Slam Volumen Index") +
         theme_classic() +
@@ -444,11 +477,6 @@ shinyServer(function(input, output, session) {
               panel.grid.major.y = element_line(color = "grey90"),
               legend.title=element_blank()
         )
-      if(input$timeseries_function_avg) {
-        plot <- plot + 
-          geom_line(data = MiDAS_PeriodAvg, aes(x=PeriodAvg, y=SVI), color = "black", linetype = "dotted") +
-          geom_point(data = MiDAS_PeriodAvg, aes(x=PeriodAvg, y=SVI), color = "black")
-      }
       
       plotlyplot <- ggplotly(plot) %>% 
         layout(margin = list(l = 70,
@@ -464,10 +492,12 @@ shinyServer(function(input, output, session) {
   })
   
   output$timeseries_dsvi <- renderPlotly({
-    if(any(input$dataset %in% c("Aktivt slam", "Aalborg BioBANK (2012-2015)"))) {
-      plot <- ggplot(data()[["subset"]]$metadata, aes(x=Date, y=DSVI)) +
+    if(any(input$dataset %in% c("Aktivt slam", "BioBANK (2015-2018)"))) {
+      plot <- ggplot(data_subset()$metadata, aes(x=Date, y=DSVI)) +
         geom_line(aes(group = Plant, color = Plant)) +
         geom_point(aes(group = Plant, color = Plant)) +
+        scale_x_date(date_labels = "%Y", 
+                     date_break = "1 year") +
         xlab("") +
         ylab("Fortyndet Slam Volumen Index") +
         theme_classic() +
@@ -476,11 +506,6 @@ shinyServer(function(input, output, session) {
               panel.grid.major.y = element_line(color = "grey90"),
               legend.title=element_blank()
         )
-      if(input$timeseries_function_avg) {
-        plot <- plot + 
-          geom_line(data = MiDAS_PeriodAvg, aes(x=PeriodAvg, y=DSVI), color = "black", linetype = "dotted") +
-          geom_point(data = MiDAS_PeriodAvg, aes(x=PeriodAvg, y=DSVI), color = "black") 
-      }
       
       plotlyplot <- ggplotly(plot) %>% 
         layout(margin = list(l = 70,
@@ -495,82 +520,9 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$timeseries_function <- renderPlotly({
-    #if(input$dataset == "Aktivt slam") {
-    #  d <- data()[["subset"]]$metadata
-    #} else if(any(input$dataset == c("Rådnetank (bakterier)", "Rådnetank (archaea)", "Aalborg BioBANK (2012-2015)"))) {
-    #  d <- data()[["subset"]]$metadata %>% group_by(Plant, Date) %>% summarise_all(mean) %>% ungroup()
-    #}
-    #plot <- ggplot(d, aes_string(x="Date", y=input$timeseries_function)) +
-    #  geom_line(aes(group = Plant, color = Plant)) +
-    #  suppressWarnings(geom_point(aes(group = Plant, color = Plant, text = apply(d[,c("Plant", "Date", input$timeseries_function)], 1, paste, collapse = "<br>")))) +
-    #  xlab("") +
-    #  ylab("Hyppighed (%)") +
-    #  theme_classic() +
-    #  theme(axis.text.x = element_text(size = 10, vjust = 0.3, angle = 90),
-    #        panel.grid.major.x = element_line(color = "grey90"),
-    #        panel.grid.major.y = element_line(color = "grey90"),
-    #        legend.title = element_blank()
-    #  )
-    #if(input$timeseries_function_avg) {
-    #  if(input$dataset == "Aktivt slam") {
-    #    plotdata <- MiDAS_PeriodAvg
-    #  } else if(input$dataset == "Rådnetank (bakterier)") {
-    #    plotdata <- digester_bacteria_PeriodAvg
-    #  } else if(input$dataset == "Rådnetank (archaea)") {
-    #    plotdata <- digester_archaea_PeriodAvg
-    #  } else if(input$dataset == "Aalborg BioBANK (2012-2015)") {
-    #    plotdata <- AalborgEW_PeriodAvg
-    #  }
-    #  plot <- plot + 
-    #    geom_line(data = plotdata, aes_string(x="PeriodAvg", y=input$timeseries_function), color = "black", linetype = "dotted") +
-    #    geom_point(data = plotdata, aes_string(x="PeriodAvg", y=input$timeseries_function), color = "black")
-    #}
-    #plotlyplot <- ggplotly(plot, tooltip = "text")
-    #plotlyplot <- plotlyplot %>% 
-    #  layout(margin = list(l = 70,
-    #                       r = 50,
-    #                       b = 50,
-    #                       t = 20,
-    #                       pad = 4
-    #  )
-    #  )
-    #return(plotlyplot)
-    
-    ds <- data()[["subset"]]
-    ds$tax <- filter(ds$tax, grepl(paste0(as.character(MiF$Genus[which(MiF[,input$timeseries_function] %in% c("POS", "VAR"))]), "$", collapse = "|"), Genus))
-    rownames(ds$tax) <- ds$tax$OTU
-    ds$abund <- ds$abund[rownames(ds$tax),]
-    
-    if(input$timeseries_function_group == "avg") {
-      group_by <- NULL
-    } else if(!input$timeseries_function_group == "avg") {
-      group_by <- "Plant"
-    }
-    plot <- suppressWarnings(amp_timeseries(data = ds,
-                                            time_variable = "Date",
-                                            tax_aggregate = "Genus",
-                                            group_by = group_by,
-                                            #plotly = TRUE,
-                                            raw = TRUE,
-                                            tax_show = input$timeseries_function_tax_show,
-                                            split = input$timeseries_function_split
-    ))
-    plotlyplot <- ggplotly(plot) %>% 
-      layout(margin = list(l = 70,
-                           r = 50,
-                           b = 50,
-                           t = 20,
-                           pad = 4
-      )
-      )
-    plotlyplot$elementId <- NULL #To suppress warning spam
-    return(plotlyplot)
-  })
-  
   ######################### ORDINATION #########################
-  output$ordination <- renderPlotly({
-    plot <- amp_ordinate(data()[["subset"]],
+  ordination <- eventReactive(input$render_ordination, {
+    plot <- amp_ordinate(data_subset(),
                          type = "PCA",
                          transform = "hellinger",
                          sample_color_by = "Plant",
@@ -580,7 +532,11 @@ shinyServer(function(input, output, session) {
                          sample_trajectory_group = "Plant",
                          sample_plotly = c("Plant", "Date")
     )
-    plotly <- ggplotly(plot) %>%
+    return(plot)
+  })
+  
+  output$ordination <- renderPlotly({
+    plotly <- ggplotly(ordination()) %>%
       layout(showlegend = FALSE)
     plotly$elementId <- NULL #To suppress warning spam
     return(plotly)
@@ -592,5 +548,17 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       file.copy("app_guide.pdf", file)
     }
+  )
+  
+  output$RColorSheet <- downloadHandler(
+    filename = "rcolors.pdf",
+    content = function(file) {
+      file.copy("rcolors.pdf", file)
+    }
+  )
+  
+  output$textmap <- downloadHandler(
+    filename = "exported_heatmap.xlsx",
+    content = function(file) {}
   )
 })
