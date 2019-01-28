@@ -16,6 +16,7 @@ library(scales)
 library(plotly)
 library(rdrop2)
 library(cowplot)
+library(openxlsx)
 
 #options(repos = BiocManager::repositories())
 
@@ -30,7 +31,7 @@ devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.
 devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.2.8/R/amp_subset_samples.R")
 devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.2.8/R/amp_subset_taxa.R")
 devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.2.8/R/amp_rename.R")
-#devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.4.0/R/amp_heatmap.R")
+devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/663c81e619713e3f85e4b5f7a8174f95174e5824/R/amp_heatmap.R") # the one with textmap + plot_functions=FALSE bug fixed
 devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/7b4842e301289a927b3ce19d399ba6e61ca5af0b/R/amp_ordinate.R")
 #devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/master/R/amp_boxplot.R")
 #devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/master/R/amp_function.R")
