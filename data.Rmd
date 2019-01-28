@@ -34,10 +34,11 @@ fix_metadata <- function(data) {
   
   # Convert dates from any year to 2012 dates
   dates <- as.Date(strftime(data$metadata$Date, format="2012-%m-%d"))
-  #extract periods
-  data$metadata$Period <- ifelse (dates >= WS | dates < SE, "Winter", #winter
-                                ifelse (dates >= SE & dates < SS, "Spring", #spring
-                                        ifelse (dates >= SS & dates < FE, "Summer", "Fall"))) #summer, fall
+  #extract periods and set factors for correct chronological order
+  data$metadata$Period <- ifelse (dates >= WS | dates < SE, "Vinter", #winter
+                                ifelse (dates >= SE & dates < SS, "Forår", #spring
+                                        ifelse (dates >= SS & dates < FE, "Sommer", "Efterår"))) #summer, fall
+  data$metadata$Period <- factor(data$metadata$Period, levels = c("Forår", "Sommer", "Efterår", "Vinter"))
   
   #check variables
   data$metadata <- data$metadata[,which(tolower(colnames(data$metadata)) %in% c("sampleid", 
