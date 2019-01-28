@@ -311,6 +311,9 @@ shinyServer(function(input, output, session) {
   )
   
   heatmap <- eventReactive(input$render_heatmap, {
+    heatmap <- NULL
+    allheatmap <- NULL
+    functions <- NULL
     #heatmap
     facet_by <- if(!input$heatmap_facet_by == "none") {input$heatmap_facet_by}
     if(input$heatmap_sort == "Gennemsnit af valgte") {
@@ -415,18 +418,43 @@ shinyServer(function(input, output, session) {
     }
     
     if(!isTRUE(input$heatmap_showmean) & !isTRUE(input$heatmap_function)) {
-      heatmap <- heatmap
+      plot <- heatmap
     } else if(isTRUE(input$heatmap_showmean) & !isTRUE(input$heatmap_function)) {
-      heatmap <- cowplot::plot_grid(heatmap, allheatmap, ncol = 2, rel_widths = c(0.90, 0.10), align = "h", axis = "tb")
+      plot <- cowplot::plot_grid(heatmap, allheatmap, ncol = 2, rel_widths = c(0.90, 0.10), align = "h", axis = "tb")
     } else if(isTRUE(!input$heatmap_showmean) & isTRUE(input$heatmap_function)) {
-      heatmap <- cowplot::plot_grid(heatmap, functions, ncol = 2, rel_widths = c(0.70, 0.30), align = "h", axis = "tb")
+      plot <- cowplot::plot_grid(heatmap, functions, ncol = 2, rel_widths = c(0.70, 0.30), align = "h", axis = "tb")
     } else if(isTRUE(input$heatmap_showmean) & isTRUE(input$heatmap_function)) {
-      heatmap <- cowplot::plot_grid(heatmap, allheatmap, functions, ncol = 3, rel_widths = c(0.65, 0.10, 0.25), align = "h", axis = "tb")
+      plot <- cowplot::plot_grid(heatmap, allheatmap, functions, ncol = 3, rel_widths = c(0.65, 0.10, 0.25), align = "h", axis = "tb")
     }
     
-    textmap <- NULL#heatmap$data[,c("Display", "Abundance", "Group")]
-    return(list(heatmap = heatmap,
-                textmap = textmap))
+    #generate textmap
+    textmap <- list()
+    textmap$heatmap <- heatmap[["data"]][,c("Display", "Abundance", "Group"), drop = FALSE] %>% 
+      unique() %>%
+      spread(key = Group, value = Abundance) %>% 
+      arrange(desc(droplevels(Display))) 
+    colnames(textmap$heatmap)[1] <- "Genus"
+    
+    if(!is.null(allheatmap)) {
+      textmap$allheatmap <- allheatmap[["data"]][,c("Display", "Abundance", "Group"), drop = FALSE] %>% 
+        unique() %>%
+        spread(key = Group, value = Abundance) %>% 
+        arrange(desc(droplevels(Display))) %>% 
+        select(-Display)
+    }
+    
+    if(!is.null(functions)) {
+      textmap$functions <- functions[["data"]] %>% 
+        unique() %>% 
+        spread(key = "Function", value = "Value") %>%
+        arrange(desc(droplevels(Genus))) %>% 
+        select(-Genus)
+    }
+    
+    #return
+    outlist <- list(heatmap = plot,
+                    textmap = bind_cols(textmap))
+    return(outlist)
   })
   
   output$heatmap <- renderPlot({
@@ -557,8 +585,10 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  output$textmap <- downloadHandler(
+  output$saveTextmap <- downloadHandler(
     filename = "exported_heatmap.xlsx",
-    content = function(file) {}
+    content = function(file) {
+      openxlsx::write.xlsx(heatmap()[["textmap"]], file)
+    }
   )
 })

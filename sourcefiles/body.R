@@ -115,7 +115,9 @@ body <- dashboardBody(
                     actionButton(inputId = "render_heatmap",
                                  label = "Opdater plot"
                     )
-                  )
+                  ),
+                  tags$hr(),
+                  downloadButton("saveTextmap", "Eksportér i Excel format")
                 ),
                 conditionalPanel(
                   condition = "input.heatmap_function",
