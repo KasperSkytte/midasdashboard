@@ -241,8 +241,8 @@ body <- dashboardBody(
             collapsible = TRUE,
             checkboxInput(
               inputId = "ord_trajectory",
-              label = "Indtegn bane mellem punkterne efter dato",
-              value = TRUE
+              label = "Indtegn bane gennem punkterne efter dato",
+              value = FALSE
             ),
             tags$hr(),
             conditionalPanel(
