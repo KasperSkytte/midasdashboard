@@ -124,8 +124,6 @@ periodAvg <- function(metadata, datecol = "Date") {
   metadata <- metadata[,apply(metadata, 2, function(x) !all(is.na(x)))]
   return(metadata)
 }
-
-
 ```
 
 #MiDAS (LATEST, USE THIS)
@@ -135,33 +133,47 @@ otutable <- data.table::fread("data/[2018-12-3] data/MiDAS/otutable.txt", fill =
 MiDAS <- amp_load(otutable, metadata)
 MiDAS <- fix_metadata(MiDAS)
 MiDAS <- genusfunctions(MiDAS)
-save(MiDAS, file = "data/MiDAS2.rda")
+save(MiDAS, file = "appdata/MiDAS2.rda")
 MiDAS_PeriodAvg <- periodAvg(MiDAS$metadata)
 MiDAS_PeriodAvg$Date <- as.character(as.Date(MiDAS_PeriodAvg$Date))
-save(MiDAS_PeriodAvg, file = "data/MiDAS_PeriodAvg.rda")
+save(MiDAS_PeriodAvg, file = "appdata/MiDAS_PeriodAvg.rda")
 ```
 
-#digester archaea (LATEST, USE THIS)
+
+#digester archaea
 ```{r}
-metadata <- openxlsx::read.xlsx("data/[2018-12-3] data/midad/Archaea 2011-2018(Q2)/metadata_midad_archaea.xlsx", detectDates = TRUE)
-otutable <- data.table::fread("data/[2018-12-3] data/midad/Archaea 2011-2018(Q2)/otutable.txt", fill = TRUE)
+metadata <- openxlsx::read.xlsx("data/MiDAD_Quarterly_samples_2006-2018_OTUs/archea_V3V5/metadata_midad_archaea.xlsx", 
+                                sheet = 2, 
+                                detectDates = TRUE)
+metadata <- filter(metadata, !Plant %in% c("POS CTRL", "NEG CTRL"))
+metadata$Date <- lubridate::ymd(metadata$Date)
+otutable <- data.table::fread("data/MiDAD_Quarterly_samples_2006-2018_OTUs/archea_V3V5/otutable.txt", fill = TRUE)
 digester_archaea <- amp_load(otutable, metadata)
 digester_archaea <- fix_metadata(digester_archaea)
+digester_archaea$metadata$Reaktor[which(is.na(digester_archaea$metadata$Reaktor) | digester_archaea$metadata$Reaktor == "")] <- NA
+digester_archaea$metadata <- mutate(digester_archaea$metadata, Plant = paste0(Plant, " R-", Reaktor))
 digester_archaea <- genusfunctions(digester_archaea)
+save(digester_archaea, file = "appdata/digester_archaea.rda")
+digester_archaea_PeriodAvg <- periodAvg(digester_archaea$metadata)
+save(digester_archaea_PeriodAvg, file = "appdata/digester_archaea_PeriodAvg.rda")
 ```
 
 #digester bacteria (LATEST, USE THIS)
 ```{r}
-metadata <- openxlsx::read.xlsx("data/[2018-12-3] data/midad/Bacteria 2011-2018 (Q2)/metadata_midad_bacteria.xlsx", sheet = "metadata", detectDates = TRUE)
-otutable <- data.table::fread("data/[2018-12-3] data/midad/Bacteria 2011-2018 (Q2)/otutable.txt", fill = TRUE)
+metadata <- openxlsx::read.xlsx("data/MiDAD_Quarterly_samples_2006-2018_OTUs/bacteria_V1V3/metadata_midad_bacteria_with_add_files.xlsx",
+                                sheet = "metadata", 
+                                detectDates = TRUE)
+colnames(metadata)[7] <- "Reaktor" #"Reactor" = "Reaktor"
+metadata$Date <- lubridate::ymd(metadata$Date)
+otutable <- data.table::fread("data/MiDAD_Quarterly_samples_2006-2018_OTUs/bacteria_V1V3/otutable.txt", fill = TRUE)
 digester_bacteria <- amp_load(otutable, metadata)
 digester_bacteria <- fix_metadata(digester_bacteria)
 digester_bacteria$metadata$Reaktor[which(is.na(digester_bacteria$metadata$Reaktor) | digester_bacteria$metadata$Reaktor == "")] <- NA
 digester_bacteria$metadata <- mutate(digester_bacteria$metadata, Plant = paste0(Plant, " R-", Reaktor))
 digester_bacteria <- genusfunctions(digester_bacteria)
-save(digester_bacteria, file = "data/digester_bacteria.rda")
+save(digester_bacteria, file = "appdata/digester_bacteria.rda")
 digester_bacteria_PeriodAvg <- periodAvg(digester_bacteria$metadata)
-save(digester_bacteria_PeriodAvg, file = "data/digester_bacteria_PeriodAvg.rda")
+save(digester_bacteria_PeriodAvg, file = "appdata/digester_bacteria_PeriodAvg.rda")
 ```
 
 #biobank, all WWPTs (LATEST, USE THIS)
@@ -173,9 +185,9 @@ biobank2015_2018 <- amp_subset_samples(biobank2015_2018, !Plant %in% c("AAU", "P
 biobank2015_2018$metadata <- mutate_at(biobank2015_2018$metadata, vars(Date), lubridate::ymd)
 biobank2015_2018 <- fix_metadata(biobank2015_2018)
 biobank2015_2018 <- genusfunctions(biobank2015_2018)
-save(biobank2015_2018, file = "data/biobank2015_2018.rda")
+save(biobank2015_2018, file = "appdata/biobank2015_2018.rda")
 biobank2015_2018_PeriodAvg <- periodAvg(biobank2015_2018$metadata)
-save(biobank2015_2018_PeriodAvg, file = "data/biobank2015_2018_PeriodAvg.rda")
+save(biobank2015_2018_PeriodAvg, file = "appdata/biobank2015_2018_PeriodAvg.rda")
 ```
 
 #biobank, AAW (LATEST, USE THIS)
@@ -185,12 +197,12 @@ otutable <- data.table::fread("data/[2018-12-3] data/biobank time series/AAV/otu
 AalborgW <- amp_load(otutable, metadata)
 AalborgW <- fix_metadata(AalborgW)
 AalborgW <- genusfunctions(AalborgW)
-save(AalborgW, file = "data/AalborgW.rda")
+save(AalborgW, file = "appdata/AalborgW.rda")
 
 ##### DSVI #####
 AalborgW_DSVI <- openxlsx::read.xlsx("data/[2018-12-3] data/biobank time series/AAV/DSVI_BIOBANK_AalborgVest_2015-2018.xlsx", detectDates = TRUE)
 AalborgW_PeriodAvg <- periodAvg(AalborgW$metadata)
-save(AalborgW_PeriodAvg, file = "data/AalborgW_PeriodAvg.rda")
+save(AalborgW_PeriodAvg, file = "appdata/AalborgW_PeriodAvg.rda")
 ```
 
 #egaamarselisborg CP332 hasteprøver
@@ -200,7 +212,7 @@ egaamarselisborg <- amp_subset_samples(amp_load(otutable = read.delim("data/aarh
 colnames(egaamarselisborg$metadata) <- c("SampleID", "Plant", "Date")
 egaamarselisborg$metadata$Date <- as.Date(egaamarselisborg$metadata$Date, origin = "1899-12-30", format = "%Y-%m-%d")
 egaamarselisborg$metadata <- genusfunctions(egaamarselisborg)
-save(egaamarselisborg, file = "data/egaamarselisborg(CP332).rda")
+save(egaamarselisborg, file = "appdata/egaamarselisborg(CP332).rda")
 ```
 
 
