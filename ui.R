@@ -17,14 +17,15 @@ library(plotly)
 library(rdrop2)
 library(cowplot)
 library(openxlsx)
+library(DT)
 
 #options(repos = BiocManager::repositories())
 
 #dashboard files
-source("sourcefiles/sidebar.R")
-source("sourcefiles/header.R")
-source("sourcefiles/body.R")
-source("sourcefiles/functions.R")
+source("sidebar.R")
+source("header.R")
+source("body.R")
+source("functions.R")
 
 #ampvis2 functions
 devtools::source_url("https://raw.githubusercontent.com/MadsAlbertsen/ampvis2/2.2.8/R/amp_load.R")
