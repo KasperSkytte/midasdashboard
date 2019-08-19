@@ -39,17 +39,17 @@ plantinfo <- readxl::read_excel(DLstatus) %>% arrange(Anlæg)
 
 shinyServer(function(input, output, session) {
   ######################### DATA #########################
-  load("data/egaamarselisborg(CP332).rda")
-  load("data/MiF.rda")
-  load("data/MiDAS2.rda")
-  load("data/digester_bacteria.rda")
-  load("data/digester_bacteria_PeriodAvg.rda")
-  load("data/digester_archaea.rda")
-  load("data/digester_archaea_PeriodAvg.rda")
-  load("data/biobank2015_2018.rda")
-  load("data/biobank2015_2018_PeriodAvg.rda")
-  load("data/AalborgW.rda")
-  load("data/AalborgW_PeriodAvg.rda")
+  load("appdata/egaamarselisborg(CP332).rda")
+  load("appdata/MiF.rda")
+  load("appdata/MiDAS2.rda")
+  load("appdata/digester_bacteria.rda")
+  load("appdata/digester_bacteria_PeriodAvg.rda")
+  load("appdata/digester_archaea.rda")
+  load("appdata/digester_archaea_PeriodAvg.rda")
+  load("appdata/biobank2015_2018.rda")
+  load("appdata/biobank2015_2018_PeriodAvg.rda")
+  load("appdata/AalborgW.rda")
+  load("appdata/AalborgW_PeriodAvg.rda")
   
   data <- reactive({
     if(input$dataset == "Aktivt slam") {
@@ -121,7 +121,7 @@ shinyServer(function(input, output, session) {
     selectizeInput(
       inputId = "filtergenera",
       label = "Filtrér til specifikke bakterier",
-      choices = str_remove_all(unique(as.character(data()[["subset"]][["tax"]][["Genus"]])), "^[k|p|c|o|f|g|s]_*"),
+      choices = sort(str_remove_all(unique(as.character(data()[["subset"]][["tax"]][["Genus"]])), "^[k|p|c|o|f|g|s]_*")),
       multiple = TRUE,
       options = list(placeholder = "Alle")
     )
@@ -331,6 +331,7 @@ shinyServer(function(input, output, session) {
                 plot_values = input$heatmap_plot_values,
                 plot_colorscale = "log10",
                 raw = TRUE,
+                function_data = MiF,
                 color_vector = unlist(strsplit(input$heatmap_colorvector, ","))
     )
     heatmap <- heatmap + 
@@ -357,6 +358,7 @@ shinyServer(function(input, output, session) {
                                 plot_values = input$heatmap_plot_values,
                                 plot_colorscale = "log10",
                                 raw = TRUE,
+                                function_data = MiF,
                                 color_vector = unlist(strsplit(input$heatmap_colorvector, ","))
                                 ) + 
         theme(legend.position = "none",
@@ -396,7 +398,7 @@ shinyServer(function(input, output, session) {
       # Merge the genus and function information
       nameFunc <- merge(x = names, y = function_data, all.x = TRUE, all.y = FALSE) 
       nameFunc[is.na(nameFunc)] <- "NT"
-      nameFuncM <- melt(nameFunc, id.vars = "Genus", value.name = "Value", variable.name = "Function")
+      nameFuncM <- data.table::melt(data.table::data.table(nameFunc), id.vars = "Genus", value.name = "Value", variable.name = "Function")
       nameFuncM$Value <- factor(nameFuncM$Value, levels = c("POS", "VAR", "NEG", "NT"))
       nameFuncM$Genus <- factor(nameFuncM$Genus, levels = names$Genus)
       
