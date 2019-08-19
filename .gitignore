@@ -42,3 +42,11 @@ data/
 .Rproj.user
 .httr*
 packrat/lib*/
+
+appdata/
+
+renv/
+
+.Rprofile
+
+plantinfo.xlsx
