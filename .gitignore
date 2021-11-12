@@ -49,4 +49,7 @@ renv/
 
 .Rprofile
 
-plantinfo.xlsx
+.Rdata
+.DS_Store
+
+data-raw/amplicon_data/

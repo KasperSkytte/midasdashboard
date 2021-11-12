@@ -1,0 +1,37 @@
+Anlæg,Konfiguration,Design,Industrielt bidrag [%COD],Primær bundfældning,Rådnetank,Retur sidestrøm hydrolyse
+Avedøre,Alternerende,BNR,20,Nej,Ja,Nej
+Bjergmarken,Alternerende,EBPR,20,Nej,Ja,Nej
+Bjerringbro,Alternerende,EBPR,20,Nej,Ja,Nej
+Boeslum,Recirkulerende,EBPR,5,Nej,Nej,Nej
+Damhusåen,Alternerende,EBPR,5,Ja,Ja,Nej
+Egå,Recirkulerende,EBPR,40,Nej,Nej,Ja
+Ejby Mølle,Alternerende,EBPR,49-55,Ja,Ja,Nej
+Esbjerg Øst,Recirkulerende,BNR,60,Ja,Ja,Nej
+Esbjerg Vest,Recirkulerende,BNR,60,Ja,Ja,Nej
+Fornæs,Recirkulerende,BNR,5,Nej,Ja,Nej
+Fredericia,Recirkulerende,EBPR,75,Nej,Ja,Nej
+Haderslev,Alternerende,EBPR,5,Nej,Nej,Ja
+Hirtshals,Alternerende,EBPR,60-70,Nej,Nej,Nej
+Hjørring,Recirkulerende,EBPR,30,Ja,Ja,Nej
+Horsens,Recirkulerende,BNR,60,Ja,Ja,Nej
+Kerteminde,Recirkulerende,EBPR,10,Nej,Nej,Nej
+Kolding,Alternerende,EBPR,14,Ja,Ja,Nej
+Lundtofte,Alternerende,EBPR,5,Ja,Ja,Nej
+Mariagerfjord,Alternerende,BNR,,Nej,Ja,Nej
+Marselisborg,Alternerende,BNR,45,Ja,Ja,Nej
+Middelfart,Recirkulerende,BNR,30,Ja,Ja,Nej
+Mørke,Alternerende,EBPR,15,Nej,Nej,Nej
+Odense NØ,Alternerende,EBPR,20,Ja,Ja,Nej
+Odense NV,Alternerende,BNR,18,Ja,Ja,Nej
+Randers,Recirkulerende,EBPR,5,Ja,Ja,Ja
+Ribe,Recirkulerende,EBPR,20,Nej,Nej,Ja
+Ringkøbing,Alternerende,EBPR,10,Ja,Ja,Ja
+Skive,Recirkulerende,EBPR,20-65,Nej,Nej,Ja → Nej
+Søholt,Alternerende,EBPR,35,Ja,Ja,Ja
+Viborg,Recirkulerende,BNR→EBPR,10,Ja,Ja,Nej → Ja
+Viby,Recirkulerende,EBPR,5,Nej,Ja,Nej
+Aabenraa,Alternerende,EBPR,5,Nej,Ja,Ja
+Åby,Alternerende,EBPR,20,Nej,Ja,Nej
+Aalborg Øst,Alternerende,EBPR,10,Ja,Ja,Ja
+Aalborg Vest,Alternerende,EBPR,30,Ja,Ja,Ja
+Aars,Alternerende,BNR,85-100,Nej,Nej,Nej
