@@ -1,4 +1,4 @@
-source("data-raw/helpers.R")
+source("data-raw/helper-functions.R")
 metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/MiDAD_Quarterly_samples_2006-2018_OTUs/archea_V3V5/metadata_midad_archaea.xlsx", 
                                 sheet = 2, 
                                 detectDates = TRUE)

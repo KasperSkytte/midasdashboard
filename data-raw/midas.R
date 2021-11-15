@@ -1,4 +1,4 @@
-source("data-raw/helpers.R")
+source("data-raw/helper-functions.R")
 
 metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/[2018-12-3] data/MiDAS/metadata_ShinyApp_2018.xlsx", detectDates = TRUE)
 otutable <- data.table::fread("data-raw/amplicon_data/[2018-12-3] data/MiDAS/otutable.txt", fill = TRUE)

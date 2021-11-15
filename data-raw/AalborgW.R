@@ -1,4 +1,4 @@
-source("data-raw/helpers.R")
+source("data-raw/helper-functions.R")
 
 metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/[2018-12-3] data/biobank time series/AAV/metadata_BIOBANK_Aalborg_Vest_2.xlsx", detectDates = TRUE)
 otutable <- data.table::fread("data-raw/amplicon_data/[2018-12-3] data/biobank time series/AAV/otutable.txt", fill = TRUE)
