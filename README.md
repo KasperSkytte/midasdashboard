@@ -4,7 +4,7 @@
 <!-- badges: end -->
 
 # About
-midasdashboard is a [Shiny App](https://shiny.rstudio.com/) to browse the microbial community of activated sludge and anaerobic digesters of (mostly) Danish waste water treatment plants.
+midasdashboard is a [Shiny App](https://shiny.rstudio.com/) to browse the microbial community of activated sludge and anaerobic digesters of (mostly) Danish waste water treatment plants. Live at https://eb-aau.shinyapps.io/midasdashboard/.
 
 # Installation
 ```
