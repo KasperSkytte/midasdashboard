@@ -34,7 +34,6 @@ metadata <- tibble::add_column(metadata,
 
 setDT(metadata)
 #### fix Plant and ID columns ####
-# controls
 metadata[grepl("extneg", tolower(LibID)), ID := "EXTNEG"]
 metadata[grepl("extneg", tolower(LibID)), Plant := "CTRL"]
 metadata[grepl("pcrpor", tolower(LibID)), ID := "PCRPOS"]
@@ -47,6 +46,8 @@ metadata[ID == "Lynetten", Plant := "Lynetten"]
 metadata[ID == "Avedøre", Plant := "Avedøre"]
 metadata[is.na(Line) | Line == "" | Line == "NA", Line := NA]
 metadata[grepl("^Marselisborg", metadata$Plant), Plant := "Marselisborg"]
+metadata[grepl("^LIB-AAW-HC-U", LibID), Line := paste0(Line, "-U")]
+metadata[grepl("^LIB-AAW-HC-O", LibID), Line := paste0(Line, "-O")]
 metadata[, Plant := ifelse(!is.na(Line), paste0(Plant, "-", Line), Plant)]
 #metadata[is.na(Plant) & is.na(Line), Plant := ID]
 
@@ -54,8 +55,9 @@ biobank <- amp_load(
   otutable = "data-raw/amplicon_data/biobank/ASVtable.tsv",
   metadata = metadata,
   taxonomy = "data-raw/amplicon_data/biobank/ASVs.R1.midas481.sintax")
-biobank <- amp_subset_samples(biobank, !grepl("ext|pcr|neg|pos", tolower(LibID)) & !Plant %in% "PCRNEG")
-biobank$metadata <- mutate(biobank$metadata, Plant )
+biobank <- amp_subset_samples(biobank, !grepl("ext|pcr|neg|pos", tolower(LibID)) & !Plant %in% "PCRNEG", normalise = TRUE)
+
+#this step uses an awful lot of memory
 biobank <- ampvis2:::filter_species(biobank, 0.1)
 biobank$metadata <- mutate_at(biobank$metadata, vars(Date), lubridate::ymd)
 biobank <- fix_metadata(biobank)
