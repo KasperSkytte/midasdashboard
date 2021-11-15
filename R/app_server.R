@@ -19,45 +19,45 @@ app_server <- function( input, output, session ) {
   ######################### DATA #########################
   data <- reactive({
     if(input$dataset == "Aktivt slam") {
-      MiF <- MiF
+      MiF <- midasdashboard::MiF
       as_plants <<- input$wwtp_as
-      d <- MiDAS
+      d <- midasdashboard::MiDAS
       if(!is.null(input$wwtp_as)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% as_plants))
       } else
         ds <- d
     } else if(input$dataset == "Rådnetank (bakterier)") {
-      MiF <- MiF
+      MiF <- midasdashboard::MiF
       db_plants <<- input$wwtp_db
-      d <- digester_bacteria
+      d <- midasdashboard::digester_bacteria
       if(!is.null(input$wwtp_db)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% db_plants))
       } else
         ds <- d
     } else if(input$dataset == "Rådnetank (archaea)") {
-      MiF <- MiF
+      MiF <- midasdashboard::MiF
       da_plants <<- input$wwtp_da
-      d <- digester_archaea
+      d <- midasdashboard::digester_archaea
       if(!is.null(input$wwtp_da)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% da_plants))
       } else
         ds <- d
     } else if(input$dataset == "BioBANK") {
-      MiF <- mfg_functions
+      MiF <- midasdashboard::mfg_functions
       biobank_plants <<- input$wwtp_biobank_all
-      d <- biobank
+      d <- midasdashboard::biobank
       if(!is.null(input$wwtp_biobank_all)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_plants))
       } else
         ds <- d
     } else if(input$dataset == "Aalborg West (2015-2018)") {
-      MiF <- MiF
-      d <- AalborgW
-      ds <- AalborgW
+      MiF <- midasdashboard::MiF
+      d <- midasdashboard::AalborgW
+      ds <- midasdashboard::AalborgW
     } else if(input$dataset == "CP332 (Egå+Marselisborg)") {
-      MiF <- MiF
+      MiF <- midasdashboard::MiF
       CP332 <<- input$wwtp_CP332
-      d <- egaamarselisborg
+      d <- midasdashboard::egaamarselisborg
       if(!is.null(input$wwtp_CP332)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% CP332))
       } else
@@ -209,7 +209,7 @@ app_server <- function( input, output, session ) {
             selectizeInput(
               inputId = "wwtp_as",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(MiDAS$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::MiDAS$metadata$Plant))),
               selected = c("Aalborg West", "Aalborg East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
@@ -220,7 +220,7 @@ app_server <- function( input, output, session ) {
             selectizeInput(
               inputId = "wwtp_db",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(digester_bacteria$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::digester_bacteria$metadata$Plant))),
               selected = c("Aalborg West", "Aalborg East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
@@ -231,7 +231,7 @@ app_server <- function( input, output, session ) {
             selectizeInput(
               inputId = "wwtp_da",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(digester_archaea$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::digester_archaea$metadata$Plant))),
               selected = c("Aalborg_West", "Aalborg_East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
@@ -242,7 +242,7 @@ app_server <- function( input, output, session ) {
             selectizeInput(
               inputId = "wwtp_biobank_all",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(biobank$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::biobank$metadata$Plant))),
               selected = c("Esbjerg West", "Esbjerg East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
@@ -253,7 +253,7 @@ app_server <- function( input, output, session ) {
             selectizeInput(
               inputId = "wwtp_CP332",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(egaamarselisborg$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::egaamarselisborg$metadata$Plant))),
               selected = c("Aalborg West", "Aalborg East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
