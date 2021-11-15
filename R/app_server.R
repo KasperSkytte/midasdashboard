@@ -16,24 +16,11 @@
 #' @importFrom openxlsx write.xlsx
 #' @noRd
 app_server <- function( input, output, session ) {
-  # load plant info
-  plantinfo <- system.file(
-    "plantinfo.csv",
-    package = "midasdashboard",
-    mustWork = TRUE
-  ) %>% 
-    data.table::fread() %>% 
-    arrange(Anlæg)
-  
   ######################### DATA #########################
-  #data("MiF")
-  #data("mfg_functions")
-  
   data <- reactive({
     if(input$dataset == "Aktivt slam") {
       MiF <- MiF
       as_plants <<- input$wwtp_as
-      #data("MiDAS")
       d <- MiDAS
       if(!is.null(input$wwtp_as)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% as_plants))
@@ -42,7 +29,6 @@ app_server <- function( input, output, session ) {
     } else if(input$dataset == "Rådnetank (bakterier)") {
       MiF <- MiF
       db_plants <<- input$wwtp_db
-      data("digester_bacteria")
       d <- digester_bacteria
       if(!is.null(input$wwtp_db)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% db_plants))
@@ -51,7 +37,6 @@ app_server <- function( input, output, session ) {
     } else if(input$dataset == "Rådnetank (archaea)") {
       MiF <- MiF
       da_plants <<- input$wwtp_da
-      data("digester_archaea")
       d <- digester_archaea
       if(!is.null(input$wwtp_da)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% da_plants))
@@ -60,7 +45,6 @@ app_server <- function( input, output, session ) {
     } else if(input$dataset == "BioBANK") {
       MiF <- mfg_functions
       biobank_plants <<- input$wwtp_biobank_all
-      data("biobank")
       d <- biobank
       if(!is.null(input$wwtp_biobank_all)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_plants))
@@ -68,13 +52,11 @@ app_server <- function( input, output, session ) {
         ds <- d
     } else if(input$dataset == "Aalborg West (2015-2018)") {
       MiF <- MiF
-      data("AalborgW")
       d <- AalborgW
       ds <- AalborgW
     } else if(input$dataset == "CP332 (Egå+Marselisborg)") {
       MiF <- MiF
       CP332 <<- input$wwtp_CP332
-      data("egaamarselisborg")
       d <- egaamarselisborg
       if(!is.null(input$wwtp_CP332)) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% CP332))
@@ -165,7 +147,7 @@ app_server <- function( input, output, session ) {
           p("Al data i denne app er baseret på prøver fra danske renseanlæg, der er indsamlet og behandlet af Aalborg Universitet som en del af ", a(href="http://midasfieldguide.org", target = "_blank", "MiDAS"), " (Microbial Database of Activated Sludge) projektet, som har til formål at samle viden om de mikroorganismer, der spiller en central rolle i de biologiske processer i spildevandsrensning."),
           p("Start med at vælg et datasæt og ét eller flere anlæg til venstre. For en detaljeret guide til appen og dens funktioner se", downloadLink("guide_pdf", "denne PDF"), "."),
           br(),
-          a(href="http://midasfieldguide.org", target = "_blank", img(src = "logobig.png"))
+          a(href="http://midasfieldguide.org", target = "_blank", img(src = "www/logobig.png"))
         )
       )
     }
@@ -310,7 +292,14 @@ app_server <- function( input, output, session ) {
   
   ######################### PLANTINFO #########################
   output$plantinfo <- DT::renderDataTable(
-    plantinfo,
+    data.table::fread(
+      system.file(
+        "plantinfo.csv",
+        package = "midasdashboard",
+        mustWork = TRUE
+      )
+    ) %>% 
+      arrange(Anlæg),
     rownames = FALSE,
     options = list(
       pageLength = 50
@@ -632,14 +621,14 @@ app_server <- function( input, output, session ) {
   output$guide_pdf <- downloadHandler(
     filename = "MiDAS dashboard guide.PDF",
     content = function(file) {
-      file.copy("app_guide.pdf", file)
+      file.copy(system.file("app_guide.pdf", package = "midasdashboard"), file)
     }
   )
   
   output$RColorSheet <- downloadHandler(
     filename = "rcolors.pdf",
     content = function(file) {
-      file.copy("rcolors.pdf", file)
+      file.copy(system.file("rcolors.pdf", package = "midasdashboard"), file)
     }
   )
   
