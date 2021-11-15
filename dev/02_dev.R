@@ -27,6 +27,7 @@ usethis::use_package("plotly")
 usethis::use_package("cowplot")
 usethis::use_package("DT")
 usethis::use_package("openxlsx")
+usethis::use_package("tidyr")
 
 #used for generating data from raw data
 usethis::use_package("tidyverse", type = "Suggests")
