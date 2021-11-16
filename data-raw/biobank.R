@@ -45,6 +45,8 @@ metadata <- metadata[!Sample %chin% "MQ201110-248"]
 metadata[ID == "Lynetten", Plant := "Lynetten"]
 metadata[ID == "Avedøre", Plant := "Avedøre"]
 metadata[is.na(Line) | Line == "" | Line == "NA", Line := NA]
+#Don't append Line for Aalborg W with (pre-)S::Select
+metadata[Plant %chin% "Aalborg W" & Line %chin% c("pre-S::Select", "S::Select"), Line := NA]
 metadata[grepl("^Marselisborg", metadata$Plant), Plant := "Marselisborg"]
 metadata[grepl("^LIB-AAW-HC-U", LibID), Line := paste0(Line, "-U")]
 metadata[grepl("^LIB-AAW-HC-O", LibID), Line := paste0(Line, "-O")]
