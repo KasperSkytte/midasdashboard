@@ -279,6 +279,10 @@ app_server <- function( input, output, session ) {
           tags$style("#filtergenera ~ .selectize-control .selectize-input {max-height: 100px;overflow-y: auto;}"),
           uiOutput("filtergenera"),
           tags$hr(),
+          div(
+            style="text-align:center;position: absolute; bottom:2%; left: 50%;",
+            tags$a(icon("github"), href = "https://github.com/cmc-aau/midasdashboard")
+          ),
           conditionalPanel(
             condition="$('html').hasClass('shiny-busy')", 
             div(style="text-align:center",
