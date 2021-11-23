@@ -4,7 +4,7 @@
 
 source("data-raw/helper-functions.R")
 require("data.table")
-metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/biobank/metadata_BioBank_2021-11-09.xlsx", detectDates = TRUE)
+metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/biobank/as/metadata_BioBank_2021-11-09.xlsx", detectDates = TRUE)
 #this is hopefully FALSE, otherwise manually check which samples to remove:
 any(duplicated(metadata$Sample))
 
@@ -44,19 +44,19 @@ metadata <- metadata[!is.na(Plant)] #this removes the weird LibID samples: MQ181
 metadata <- metadata[!Sample %chin% "MQ201110-248"]
 metadata[ID == "Lynetten", Plant := "Lynetten"]
 metadata[ID == "Avedøre", Plant := "Avedøre"]
+metadata[grepl("^Marselisborg", Plant), Plant := "Marselisborg"]
+
 metadata[is.na(Line) | Line == "" | Line == "NA", Line := NA]
-#Don't append Line for Aalborg W with (pre-)S::Select
-metadata[Plant %chin% "Aalborg W" & Line %chin% c("pre-S::Select", "S::Select"), Line := NA]
-metadata[grepl("^Marselisborg", metadata$Plant), Plant := "Marselisborg"]
-metadata[grepl("^LIB-AAW-HC-U", LibID), Line := paste0(Line, "-U")]
-metadata[grepl("^LIB-AAW-HC-O", LibID), Line := paste0(Line, "-O")]
+metadata[!Plant %chin% c("Damhusåen", "Marselisborg"), Line := NA]
+metadata[grepl("^LIB-AAW-HC-U", LibID), Line := "U"]
+metadata[grepl("^LIB-AAW-HC-O", LibID), Line := "O"]
 metadata[, Plant := ifelse(!is.na(Line), paste0(Plant, "-", Line), Plant)]
 #metadata[is.na(Plant) & is.na(Line), Plant := ID]
 
 biobank <- amp_load(
-  otutable = "data-raw/amplicon_data/biobank/ASVtable.tsv",
+  otutable = "data-raw/amplicon_data/biobank/as/ASVtable.tsv",
   metadata = metadata,
-  taxonomy = "data-raw/amplicon_data/biobank/ASVs.R1.midas481.sintax")
+  taxonomy = "data-raw/amplicon_data/biobank/as/ASVs.R1.midas481.sintax")
 biobank <- amp_subset_samples(biobank, !grepl("ext|pcr|neg|pos", tolower(LibID)) & !Plant %in% "PCRNEG", normalise = TRUE)
 
 #this step uses an awful lot of memory
