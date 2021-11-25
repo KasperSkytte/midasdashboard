@@ -50,6 +50,22 @@ app_server <- function( input, output, session ) {
         ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_plants))
       } else
         ds <- d
+    } else if(input$dataset == "Sverige (bakterier)") {
+      MiF <- midasdashboard::mfg_functions
+      biobanksweden_bac_plants <<- input$wwtp_biobanksweden_bac_all
+      d <- midasdashboard::biobanksweden_bac
+      if(!is.null(input$wwtp_biobanksweden_bac_all)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobanksweden_bac_plants))
+      } else
+        ds <- d
+    } else if(input$dataset == "Sverige (archaea)") {
+      MiF <- midasdashboard::mfg_functions
+      biobanksweden_arc_plants <<- input$wwtp_biobanksweden_arc_all
+      d <- midasdashboard::biobanksweden_arc
+      if(!is.null(input$wwtp_biobanksweden_arc_all)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobanksweden_arc_plants))
+      } else
+        ds <- d
     } else if(input$dataset == "Aalborg West (2015-2018)") {
       MiF <- midasdashboard::MiF
       d <- midasdashboard::AalborgW
@@ -199,7 +215,10 @@ app_server <- function( input, output, session ) {
                 "Rådnetank (bakterier)", 
                 "Rådnetank (archaea)", 
                 "BioBANK",
-                "Aalborg West (2015-2018)")
+                "Aalborg West (2015-2018)",
+                "Sverige (bakterier)",
+                "Sverige (archaea)"
+              )
             },
             selected = "Aktivt slam",
             multiple = FALSE
@@ -244,6 +263,28 @@ app_server <- function( input, output, session ) {
               label = "Renseanlæg (blank for alle)",
               choices = sort(as.character(unique(midasdashboard::biobank$metadata$Plant))),
               selected = c("Esbjerg West", "Esbjerg East"),
+              multiple = TRUE,
+              options = list(placeholder = "Alle")
+            )
+          ),
+          conditionalPanel(
+            condition = "input.dataset == 'Sverige (bakterier)'",
+            selectizeInput(
+              inputId = "wwtp_biobanksweden_bac_all",
+              label = "Renseanlæg (blank for alle)",
+              choices = sort(as.character(unique(midasdashboard::biobanksweden_bac$metadata$Plant))),
+              selected = NULL,
+              multiple = TRUE,
+              options = list(placeholder = "Alle")
+            )
+          ),
+          conditionalPanel(
+            condition = "input.dataset == 'Sverige (archaea)'",
+            selectizeInput(
+              inputId = "wwtp_biobanksweden_arc_all",
+              label = "Renseanlæg (blank for alle)",
+              choices = sort(as.character(unique(midasdashboard::biobanksweden_arc$metadata$Plant))),
+              selected = NULL,
               multiple = TRUE,
               options = list(placeholder = "Alle")
             )

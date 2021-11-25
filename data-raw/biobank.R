@@ -10,28 +10,6 @@ any(duplicated(metadata$Sample))
 
 #filter a few useless samples
 metadata <- filter(metadata, !Sample %chin% paste0("MQ201110-", 309:311))
-metadata$Date <- lubridate::ymd(metadata$Date)
-metadata$Year <- as.character(lubridate::year(metadata$Date))
-
-#### add seasonal period and week number ####
-#extract seasonal periods from dates
-WS <- as.Date("2012-12-15", format = "%Y-%m-%d") # Winter Solstice
-SE <- as.Date("2012-3-15",  format = "%Y-%m-%d") # Spring Equinox
-SS <- as.Date("2012-6-15",  format = "%Y-%m-%d") # Summer Solstice
-FE <- as.Date("2012-9-15",  format = "%Y-%m-%d") # Fall Equinox
-
-# Convert dates from any year to 2012 dates
-dates <- as.Date(strftime(metadata$Date, format="2012-%m-%d"))
-#extract periods and set factors for correct chronological order
-metadata$Period <- ifelse (dates >= WS | dates < SE, "Winter", #winter
-                           ifelse (dates >= SE & dates < SS, "Spring", #spring
-                                   ifelse (dates >= SS & dates < FE, "Summer", "Fall"))) #summer, fall
-metadata$Period <- factor(metadata$Period, levels = c("Spring", "Summer", "Fall", "Winter"))
-
-metadata <- tibble::add_column(metadata,
-                               Week = as.character(lubridate::isoweek(metadata$Date)),
-                               .after = "Date")
-
 setDT(metadata)
 #### fix Plant and ID columns ####
 metadata[grepl("extneg", tolower(LibID)), ID := "EXTNEG"]
@@ -61,16 +39,17 @@ biobank <- amp_subset_samples(biobank, !grepl("ext|pcr|neg|pos", tolower(LibID))
 
 #this step uses an awful lot of memory
 biobank <- ampvis2:::filter_species(biobank, 0.1)
-biobank$metadata <- mutate_at(biobank$metadata, vars(Date), lubridate::ymd)
-biobank <- fix_metadata(biobank)
+
+biobank$metadata$Date <- lubridate::ymd(biobank$metadata$Date)
+biobank$metadata <- fix_metadata(biobank$metadata)
 
 data("mfg_functions")
-biobank <- genusfunctions(biobank,
-                          function_data = mfg_functions)
+biobank <- genusfunctions(
+  biobank,
+  function_data = mfg_functions
+)
 
 biobank_PeriodAvg <- periodAvg(biobank$metadata)
 
 usethis::use_data(biobank, overwrite = TRUE)
 usethis::use_data(biobank_PeriodAvg, overwrite = TRUE)
-
-

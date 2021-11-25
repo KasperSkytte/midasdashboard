@@ -4,7 +4,7 @@ metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/[2018-12-3] data/MiDAS/m
 otutable <- data.table::fread("data-raw/amplicon_data/[2018-12-3] data/MiDAS/otutable.txt", fill = TRUE)
 MiDAS <- amp_load(otutable, metadata)
 MiDAS <- ampvis2:::filter_species(MiDAS, 0.1)
-MiDAS <- fix_metadata(MiDAS)
+MiDAS$metadata <- fix_metadata(MiDAS$metadata)
 MiDAS <- genusfunctions(MiDAS)
 MiDAS_PeriodAvg <- periodAvg(MiDAS$metadata)
 MiDAS_PeriodAvg$Date <- as.character(as.Date(MiDAS_PeriodAvg$Date))

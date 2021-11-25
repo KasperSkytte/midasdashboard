@@ -4,7 +4,7 @@ metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/[2018-12-3] data/biobank
 otutable <- data.table::fread("data-raw/amplicon_data/[2018-12-3] data/biobank time series/AAV/otutable.txt", fill = TRUE)
 AalborgW <- amp_load(otutable, metadata)
 AalborgW <- ampvis2:::filter_species(AalborgW, 0.1)
-AalborgW <- fix_metadata(AalborgW)
+AalborgW$metadata <- fix_metadata(AalborgW$metadata)
 AalborgW <- genusfunctions(AalborgW)
 
 ##### DSVI #####
