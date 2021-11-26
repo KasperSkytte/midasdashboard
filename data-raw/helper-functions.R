@@ -41,14 +41,10 @@ fix_metadata <- function(metadata) {
   metadata$Plant <- stringr::str_replace_all(
     metadata$Plant,
     pattern = c(
-      "Aalborg E" = "Aalborg East",
-      "Aalborg W" = "Aalborg West",
-      "Aalborg oest" = "Aalborg East",
-      "Aalborg Øst" = "Aalborg East",
-      "Aalborg Vest" = "Aalborg West",
-      "Esbjerg E" = "Esbjerg East",
-      "Esbjerg W" = "Esbjerg West",
-      "Esbjerg Vest" = "Esbjerg West",
+      "^Aalborg [eEoOøØ].*$" = "Aalborg East",
+      "^Aalborg [vVwW].*$" = "Aalborg W",
+      "^Esbjerg [eEøØ].*$" = "Esbjerg East",
+      "^Esbjerg [vVwW].*$" = "Esbjerg West",
       "aaby" = "Åby",
       "Odense NV" = "Odense NW",
       "Avedoere" = "Avedøre",
