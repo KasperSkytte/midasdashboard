@@ -42,7 +42,7 @@ fix_metadata <- function(metadata) {
     metadata$Plant,
     pattern = c(
       "^Aalborg [eEoOøØ].*$" = "Aalborg East",
-      "^Aalborg [vVwW].*$" = "Aalborg W",
+      "^Aalborg [vVwW].*$" = "Aalborg West",
       "^Esbjerg [eEøØ].*$" = "Esbjerg East",
       "^Esbjerg [vVwW].*$" = "Esbjerg West",
       "aaby" = "Åby",
@@ -76,7 +76,7 @@ genusfunctions <- function(
     "DN", 
     "Anammox"
   ),
-  function_data = MiF
+  function_data = midasdashboard::MiF
 ) {
   data <- ampvis2:::amp_rename(data)
   message("Normalising counts...")
