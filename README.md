@@ -19,3 +19,15 @@ midasdashboard::run_app()
 ```
 
 The login is `MiDAS2017` and password `spildevand`
+
+# Publishing to shinyapps.io (developers)
+Get a token through shinyapps.io/admin, follow the instructions, and then only upload the following files:
+```
+.Rbuildignore
+app.R
+DESCRIPTION
+NAMESPACE
+data/
+inst/
+R/
+```
