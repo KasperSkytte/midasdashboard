@@ -112,7 +112,7 @@ app_ui <- function(request) {
                                   value = TRUE
                     ),
                     checkboxInput(inputId = "heatmap_showmean",
-                                  label = "Vis gennemsnit af alle anlæg i MiDAS", 
+                                  label = "Vis gennemsnit af alle anlæg i data sæt",
                                   value = FALSE
                     ),
                     checkboxInput(inputId = "heatmap_function",
@@ -180,7 +180,7 @@ app_ui <- function(request) {
                            height = "700px")
             ),
             conditionalPanel(
-              condition = "(input.dataset == 'Aktivt slam' || input.dataset == 'BioBANK') && input.genusfunction == 'FIL'",
+              condition = "(input.dataset == 'MiDAS kvartalsprøver AS' || input.dataset == 'BioBank AS') && input.genusfunction == 'FIL'",
               tabBox(
                 title = tagList(shiny::icon("chart-line"), "Slam Volumen Index"),
                 width = 12,

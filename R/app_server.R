@@ -18,36 +18,52 @@
 app_server <- function( input, output, session ) {
   ######################### DATA #########################
   data <- reactive({
-    if(input$dataset == "Aktivt slam") {
+    if(input$dataset == "MiDAS kvartalsprøver AS") {
       MiF <- midasdashboard::MiF
-      as_plants <<- input$wwtp_as
+      midas_plants <<- input$wwtp_midas
       d <- midasdashboard::MiDAS
-      if(!is.null(input$wwtp_as)) {
-        ds <- suppressMessages(amp_subset_samples(d, Plant %in% as_plants))
+      if(!is.null(input$wwtp_midas)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% midas_plants))
       } else
         ds <- d
-    } else if(input$dataset == "Rådnetank (bakterier)") {
+    } else if(input$dataset == "MiDAD kvartalsprøver AD (bakterier)") {
       MiF <- midasdashboard::MiF
-      db_plants <<- input$wwtp_db
-      d <- midasdashboard::digester_bacteria
-      if(!is.null(input$wwtp_db)) {
-        ds <- suppressMessages(amp_subset_samples(d, Plant %in% db_plants))
+      midad_db_plants <<- input$wwtp_midad_bac
+      d <- midasdashboard::midad_bac
+      if(!is.null(input$wwtp_midad_bac)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% midad_db_plants))
       } else
         ds <- d
-    } else if(input$dataset == "Rådnetank (archaea)") {
+    } else if(input$dataset == "MiDAD kvartalsprøver AD (archaea)") {
       MiF <- midasdashboard::MiF
-      da_plants <<- input$wwtp_da
-      d <- midasdashboard::digester_archaea
-      if(!is.null(input$wwtp_da)) {
-        ds <- suppressMessages(amp_subset_samples(d, Plant %in% da_plants))
+      midad_da_plants <<- input$wwtp_midad_arc
+      d <- midasdashboard::midad_arc
+      if(!is.null(input$wwtp_midad_arc)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% midad_da_plants))
       } else
         ds <- d
-    } else if(input$dataset == "BioBANK") {
+    } else if(input$dataset == "BioBank AD (bakterier)") {
+      MiF <- midasdashboard::MiF
+      biobank_db_plants <<- input$wwtp_biobank_ad_bac
+      d <- midasdashboard::biobank_ad_bac
+      if(!is.null(input$wwtp_biobank_ad_bac)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_db_plants))
+      } else
+        ds <- d
+    } else if(input$dataset == "BioBank AD (archaea)") {
+      MiF <- midasdashboard::MiF
+      biobank_da_plants <<- input$wwtp_biobank_ad_arc
+      d <- midasdashboard::biobank_ad_arc
+      if(!is.null(input$wwtp_biobank_ad_arc)) {
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_da_plants))
+      } else
+        ds <- d
+    } else if(input$dataset == "BioBank AS") {
       MiF <- midasdashboard::mfg_functions
-      biobank_plants <<- input$wwtp_biobank_all
-      d <- midasdashboard::biobank
+      biobank_as_plants <<- input$wwtp_biobank_all
+      d <- midasdashboard::biobank_as
       if(!is.null(input$wwtp_biobank_all)) {
-        ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_plants))
+        ds <- suppressMessages(amp_subset_samples(d, Plant %in% biobank_as_plants))
       } else
         ds <- d
     } else if(input$dataset == "Sverige (bakterier)") {
@@ -204,17 +220,24 @@ app_server <- function( input, output, session ) {
             inputId = "dataset",
             label = "Datasæt",
             choices = if(input$user_name == "aarhusvand") {
-              c("Aktivt slam",
-                "Rådnetank (bakterier)",
-                "Rådnetank (archaea)", 
-                "BioBANK", 
+              c("MiDAS kvartalsprøver AS",
+                "MiDAD kvartalsprøver AD (bakterier)",
+                "MiDAD kvartalsprøver AD (archaea)",
+                "BioBank AD (bakterier)", 
+                "BioBank AD (archaea)", 
+                "BioBank AS",
                 "Aalborg West (2015-2018)",
-                "CP332 (Egå+Marselisborg)") 
+                "Sverige (bakterier)",
+                "Sverige (archaea)",
+                "CP332 (Egå+Marselisborg)"
+              )
             } else {
-              c("Aktivt slam", 
-                "Rådnetank (bakterier)", 
-                "Rådnetank (archaea)", 
-                "BioBANK",
+              c("MiDAS kvartalsprøver AS",
+                "MiDAD kvartalsprøver AD (bakterier)",
+                "MiDAD kvartalsprøver AD (archaea)",
+                "BioBank AD (bakterier)", 
+                "BioBank AD (archaea)", 
+                "BioBank AS",
                 "Aalborg West (2015-2018)",
                 "Sverige (bakterier)",
                 "Sverige (archaea)"
@@ -224,9 +247,9 @@ app_server <- function( input, output, session ) {
             multiple = FALSE
           ),
           conditionalPanel(
-            condition = "input.dataset == 'Aktivt slam'",
+            condition = "input.dataset == 'MiDAS kvartalsprøver AS'",
             selectizeInput(
-              inputId = "wwtp_as",
+              inputId = "wwtp_midas",
               label = "Renseanlæg (blank for alle)",
               choices = sort(as.character(unique(midasdashboard::MiDAS$metadata$Plant))),
               selected = c("Aalborg West", "Aalborg East"),
@@ -235,33 +258,55 @@ app_server <- function( input, output, session ) {
             )
           ),
           conditionalPanel(
-            condition = "input.dataset == 'Rådnetank (bakterier)'",
+            condition = "input.dataset == 'MiDAD kvartalsprøver AD (bakterier)'",
             selectizeInput(
-              inputId = "wwtp_db",
+              inputId = "wwtp_midad_bac",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(midasdashboard::digester_bacteria$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::midad_bac$metadata$Plant))),
               selected = c("Aalborg West", "Aalborg East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
             )
           ),
           conditionalPanel(
-            condition = "input.dataset == 'Rådnetank (archaea)'",
+            condition = "input.dataset == 'MiDAD kvartalsprøver AD (archaea)'",
             selectizeInput(
-              inputId = "wwtp_da",
+              inputId = "wwtp_midad_arc",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(midasdashboard::digester_archaea$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::midad_arc$metadata$Plant))),
+              selected = c("Aalborg West", "Aalborg East"),
+              multiple = TRUE,
+              options = list(placeholder = "Alle")
+            )
+          ),
+          conditionalPanel(
+            condition = "input.dataset == 'BioBank AD (bakterier)'",
+            selectizeInput(
+              inputId = "wwtp_biobank_ad_bac",
+              label = "Renseanlæg (blank for alle)",
+              choices = sort(as.character(unique(midasdashboard::biobank_ad_bac$metadata$Plant))),
+              selected = c("Aalborg West", "Aalborg East"),
+              multiple = TRUE,
+              options = list(placeholder = "Alle")
+            )
+          ),
+          conditionalPanel(
+            condition = "input.dataset == 'BioBank AD (archaea)'",
+            selectizeInput(
+              inputId = "wwtp_biobank_ad_arc",
+              label = "Renseanlæg (blank for alle)",
+              choices = sort(as.character(unique(midasdashboard::biobank_ad_arc$metadata$Plant))),
               selected = c("Aalborg_West", "Aalborg_East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")
             )
           ),
           conditionalPanel(
-            condition = "input.dataset == 'BioBANK'",
+            condition = "input.dataset == 'BioBank AS'",
             selectizeInput(
               inputId = "wwtp_biobank_all",
               label = "Renseanlæg (blank for alle)",
-              choices = sort(as.character(unique(midasdashboard::biobank$metadata$Plant))),
+              choices = sort(as.character(unique(midasdashboard::biobank_as$metadata$Plant))),
               selected = c("Esbjerg West", "Esbjerg East"),
               multiple = TRUE,
               options = list(placeholder = "Alle")

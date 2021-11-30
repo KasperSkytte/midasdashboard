@@ -1,0 +1,55 @@
+#####################################################
+# For this one you need at least 20GB RAM AVAILABLE #
+#####################################################
+
+source("data-raw/helper-functions.R")
+require("data.table")
+metadata <- openxlsx::read.xlsx("data-raw/amplicon_data/biobank/as/metadata_BioBank_2021-11-09.xlsx", detectDates = TRUE)
+#this is hopefully FALSE, otherwise manually check which samples to remove:
+any(duplicated(metadata$Sample))
+
+#filter a few useless samples
+metadata <- filter(metadata, !Sample %chin% paste0("MQ201110-", 309:311))
+setDT(metadata)
+#### fix Plant and ID columns ####
+metadata[grepl("extneg", tolower(LibID)), ID := "EXTNEG"]
+metadata[grepl("extneg", tolower(LibID)), Plant := "CTRL"]
+metadata[grepl("pcrpor", tolower(LibID)), ID := "PCRPOS"]
+metadata[grepl("pcrpos", tolower(LibID)), Plant := "CTRL"]
+metadata[grepl("pcrneg", tolower(LibID)), ID := "PCRNEG"]
+metadata[grepl("pcrneg", tolower(LibID)), Plant := "CTRL"]
+metadata <- metadata[!is.na(Plant)] #this removes the weird LibID samples: MQ181023-148, MQ181203-218, MQ181214-138, MQ190919-270
+metadata <- metadata[!Sample %chin% "MQ201110-248"]
+metadata[ID == "Lynetten", Plant := "Lynetten"]
+metadata[ID == "Avedøre", Plant := "Avedøre"]
+metadata[grepl("^Marselisborg", Plant), Plant := "Marselisborg"]
+
+metadata[is.na(Line) | Line == "" | Line == "NA", Line := NA]
+metadata[!Plant %chin% c("Damhusåen", "Marselisborg"), Line := NA]
+metadata[grepl("^LIB-AAW-HC-U", LibID), Line := "U"]
+metadata[grepl("^LIB-AAW-HC-O", LibID), Line := "O"]
+metadata[, Plant := ifelse(!is.na(Line), paste0(Plant, "-", Line), Plant)]
+#metadata[is.na(Plant) & is.na(Line), Plant := ID]
+
+biobank_as <- amp_load(
+  otutable = "data-raw/amplicon_data/biobank/as/ASVtable.tsv",
+  metadata = metadata,
+  taxonomy = "data-raw/amplicon_data/biobank/as/ASVs.R1.midas481.sintax")
+biobank_as <- amp_subset_samples(biobank_as, !grepl("ext|pcr|neg|pos", tolower(LibID)) & !Plant %in% "PCRNEG", normalise = TRUE)
+
+#this step uses an awful lot of memory
+biobank_as <- ampvis2:::filter_species(biobank_as, 0.1)
+
+biobank_as$metadata$Date <- lubridate::ymd(biobank_as$metadata$Date)
+biobank_as$metadata <- fix_metadata(biobank_as$metadata)
+
+data("mfg_functions")
+biobank_as <- genusfunctions(
+  biobank_as,
+  function_data = mfg_functions
+)
+
+usethis::use_data(biobank_as, overwrite = TRUE)
+
+#biobank_as_PeriodAvg <- periodAvg(biobank_as$metadata)
+#usethis::use_data(biobank_as_PeriodAvg, overwrite = TRUE)
