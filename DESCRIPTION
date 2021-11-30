@@ -1,6 +1,6 @@
 Package: midasdashboard
 Title: MiDAS dashboard shiny app
-Version: 0.1.5.9000
+Version: 0.1.6.9000
 Authors@R: person('Kasper', 'Skytte Andersen', email = 'kasperskytteandersen@gmail.com', role = c('cre', 'aut'))
 Description: Shiny App to visualize microbial community data from WWTP's part of the MiDAS project.
 License: MIT + file LICENSE
