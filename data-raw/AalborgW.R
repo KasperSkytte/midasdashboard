@@ -9,8 +9,8 @@ AalborgW <- genusfunctions(AalborgW)
 
 ##### DSVI #####
 AalborgW_DSVI <- openxlsx::read.xlsx("data-raw/amplicon_data/[2018-12-3] data/biobank time series/AAV/DSVI_BIOBANK_AalborgVest_2015-2018.xlsx", detectDates = TRUE)
-AalborgW_PeriodAvg <- periodAvg(AalborgW$metadata)
-
-
 usethis::use_data(AalborgW, overwrite = TRUE)
-usethis::use_data(AalborgW_PeriodAvg, overwrite = TRUE)
+
+#AalborgW_PeriodAvg <- periodAvg(AalborgW$metadata)
+#usethis::use_data(AalborgW_PeriodAvg, overwrite = TRUE)
+

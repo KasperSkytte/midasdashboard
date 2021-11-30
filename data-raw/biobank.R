@@ -49,7 +49,7 @@ biobank <- genusfunctions(
   function_data = mfg_functions
 )
 
-biobank_PeriodAvg <- periodAvg(biobank$metadata)
-
 usethis::use_data(biobank, overwrite = TRUE)
-usethis::use_data(biobank_PeriodAvg, overwrite = TRUE)
+
+#biobank_PeriodAvg <- periodAvg(biobank$metadata)
+#usethis::use_data(biobank_PeriodAvg, overwrite = TRUE)

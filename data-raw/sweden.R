@@ -60,10 +60,10 @@ biobanksweden_arc <- genusfunctions(
 )
 biobanksweden_arc$metadata <- fix_metadata(biobanksweden_arc$metadata)
 
-biobanksweden_arc_PeriodAvg <- periodAvg(biobanksweden_arc$metadata)
-biobanksweden_bac_PeriodAvg <- periodAvg(biobanksweden_bac$metadata)
-
 usethis::use_data(biobanksweden_bac, overwrite = TRUE)
-usethis::use_data(biobanksweden_bac_PeriodAvg, overwrite = TRUE)
 usethis::use_data(biobanksweden_arc, overwrite = TRUE)
-usethis::use_data(biobanksweden_arc_PeriodAvg, overwrite = TRUE)
+#biobanksweden_arc_PeriodAvg <- periodAvg(biobanksweden_arc$metadata)
+#biobanksweden_bac_PeriodAvg <- periodAvg(biobanksweden_bac$metadata)
+
+#usethis::use_data(biobanksweden_bac_PeriodAvg, overwrite = TRUE)
+#usethis::use_data(biobanksweden_arc_PeriodAvg, overwrite = TRUE)
