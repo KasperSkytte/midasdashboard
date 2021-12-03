@@ -1,12 +1,12 @@
 require("data.table")
 source("data-raw/helper-functions.R")
 metadata <- openxlsx::read.xlsx(
-  "data-raw/amplicon_data/sweden/metadata_midas_sweden_2021-11-25_SHH.xlsx",
+  "data-raw/amplicon_data/sweden/metadata_midas_sweden_2021-12-02_SHH.xlsx",
   detectDates = TRUE
 )
 
 #this is hopefully FALSE, otherwise manually check which samples to remove:
-any(duplicated(metadata$Sample))
+any(duplicated(metadata[[1]]))
 
 #several columns are empty all the way down, just remove
 emptycols <- lapply(metadata, function(x) all(is.na(x)))
@@ -26,6 +26,13 @@ biobanksweden <- amp_load(
   taxonomy = "data-raw/amplicon_data/sweden/ASVs.R1.midas481.sintax")
 
 #check control samples before removing them
+#check controls and remove
+amp_subset_samples(
+  biobanksweden,
+  Plant %chin% "CTRL",
+  normalise = FALSE
+) %>% 
+  amp_heatmap(normalise = FALSE, group_by = "LibID")
 biobanksweden <- amp_subset_samples(
   biobanksweden,
   !Plant %chin% "CTRL",
