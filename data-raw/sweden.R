@@ -1,7 +1,7 @@
 require("data.table")
 source("data-raw/helper-functions.R")
 metadata <- openxlsx::read.xlsx(
-  "data-raw/amplicon_data/sweden/metadata_midas_sweden_2021-12-02_SHH.xlsx",
+  "data-raw/amplicon_data/sweden/metadata_midas_sweden_2022-01-13_SHH.xlsx",
   detectDates = TRUE
 )
 
@@ -23,7 +23,8 @@ metadata[!Plant %chin% "CTRL", Plant := ifelse(!is.na(Line), paste0(Plant, "-", 
 biobanksweden <- amp_load(
   otutable = "data-raw/amplicon_data/sweden/ASVtable.tsv",
   metadata = metadata,
-  taxonomy = "data-raw/amplicon_data/sweden/ASVs.R1.midas481.sintax")
+  taxonomy = "data-raw/amplicon_data/sweden/ASVs.R1.midas481.sintax"
+)
 
 #check control samples before removing them
 #check controls and remove
@@ -46,25 +47,29 @@ biobanksweden$metadata$Date <- lubridate::ymd(biobanksweden$metadata$Date)
 
 data("mfg_functions")
 #bacteria
-biobanksweden_bac <- amp_subset_samples(
-  biobanksweden,
-  Primer %chin% "Bacteria"
-)
-biobanksweden_bac <- genusfunctions(
-  biobanksweden_bac,
-  function_data = mfg_functions
-)
+biobanksweden_bac <- biobanksweden %>% 
+  amp_subset_samples(
+    Primer %chin% "Bacteria"
+  ) %>% 
+  amp_subset_taxa(
+    "k__Bacteria"
+  ) %>% 
+  genusfunctions(
+    function_data = mfg_functions
+  )
 biobanksweden_bac$metadata <- fix_metadata(biobanksweden_bac$metadata)
 
 #archaea
-biobanksweden_arc <- amp_subset_samples(
-  biobanksweden,
-  Primer %chin% "Archaea"
-)
-biobanksweden_arc <- genusfunctions(
-  biobanksweden_arc,
-  function_data = mfg_functions
-)
+biobanksweden_arc <- biobanksweden %>% 
+  amp_subset_samples(
+    Primer %chin% "Archaea"
+  ) %>% 
+  amp_subset_taxa(
+    "k__Archaea"
+  ) %>% 
+  genusfunctions(
+    function_data = mfg_functions
+  )
 biobanksweden_arc$metadata <- fix_metadata(biobanksweden_arc$metadata)
 
 usethis::use_data(biobanksweden_bac, overwrite = TRUE)

@@ -17,6 +17,11 @@ midad_arc$metadata <- mutate(midad_arc$metadata, Plant = paste0(Plant, " R-", Re
 midad_arc <- genusfunctions(midad_arc)
 #midad_arc_PeriodAvg <- periodAvg(midad_arc$metadata)
 #usethis::use_data(midad_arc_PeriodAvg, overwrite = TRUE)
+midad_arc <- amp_subset_taxa(
+  midad_arc,
+  "Archaea"
+)
+
 usethis::use_data(midad_arc, overwrite = TRUE)
 
 # bacteria #
@@ -32,6 +37,10 @@ midad_bac$metadata <- fix_metadata(midad_bac$metadata)
 midad_bac$metadata$Reaktor[which(is.na(midad_bac$metadata$Reaktor) | midad_bac$metadata$Reaktor == "")] <- NA
 midad_bac$metadata <- mutate(midad_bac$metadata, Plant = paste0(Plant, " R-", Reaktor))
 midad_bac <- genusfunctions(midad_bac)
+midad_bac <- amp_subset_taxa(
+  midad_bac,
+  "Bacteria"
+)
 #midad_bac_PeriodAvg <- periodAvg(midad_bac$metadata)
 #usethis::use_data(midad_bac_PeriodAvg, overwrite = TRUE)
 usethis::use_data(midad_bac, overwrite = TRUE)

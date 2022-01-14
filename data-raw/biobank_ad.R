@@ -50,10 +50,22 @@ digester_data <- function(
 biobank_ad_arc <- digester_data(
   metadata_path = "data-raw/amplicon_data/biobank/ad/211116_metadataBioBank_Archaea.txt",
 )
+# half are actually bacteria, remove them by name
+table(biobank_ad_arc$tax$Kingdom)
+biobank_ad_arc <- amp_subset_taxa(
+  biobank_ad_arc,
+  "Archaea"
+)
 usethis::use_data(biobank_ad_arc, overwrite = TRUE)
 
 ## bacteria
 biobank_ad_bac <- digester_data(
   metadata_path = "data-raw/amplicon_data/biobank/ad/211116_metadataBioBank_Bacteria.txt"
+)
+# check for bacteria and remove by name
+table(biobank_ad_bac$tax$Kingdom)
+biobank_ad_bac <- amp_subset_taxa(
+  biobank_ad_bac,
+  "Bacteria"
 )
 usethis::use_data(biobank_ad_bac, overwrite = TRUE)
